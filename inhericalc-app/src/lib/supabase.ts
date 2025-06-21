@@ -142,6 +142,27 @@ export async function signInWithGoogle() {
   }
 }
 
+// Kakao로 로그인
+export async function signInWithKakao() {
+  if (!supabase) {
+    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
+  }
+  
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: {
+        redirectTo: window.location.origin,
+        scopes: 'profile_image profile_nickname'
+      },
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error('Kakao 로그인 오류:', error);
+    throw error;
+  }
+}
+
 // 로그아웃
 export async function signOut() {
   if (!supabase) {

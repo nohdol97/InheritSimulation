@@ -12,7 +12,7 @@
 	•	DB: Supabase (PostgreSQL 기반)
 	•	챗봇: GPT API (OpenAI GPT-4 Turbo) 연동
 	•	배포: Vercel (전체 프로젝트 프론트 + 백엔드 포함)
-	•	인증: Supabase Auth (Email/Password, Google OAuth)
+	•	인증: Supabase Auth (Email/Password, Google OAuth, Kakao OAuth)
 
 ⸻
 
@@ -35,6 +35,7 @@
 3) 사용자 인증 기능
 	•	이메일/비밀번호 회원가입 및 로그인
 	•	Google 계정 연동 로그인/회원가입
+	•	카카오 계정 연동 로그인/회원가입
 	•	개인정보 활용 동의 (회원가입 시)
 	•	로그인 시 계산 기록 저장 및 조회
 
