@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import StepForm from '@/components/StepForm';
 import LiveCalculation from '@/components/LiveCalculation';
 import ResultSummary from '@/components/ResultSummary';
+import AuthModal from '@/components/AuthModal';
 import { InheritanceData, TaxCalculationResult } from '@/types';
+import { getCurrentUser, saveCalculationRecord, signOut } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 export default function Home() {
   const [formData, setFormData] = useState<InheritanceData>({
@@ -38,6 +41,17 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFinalResult, setShowFinalResult] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    // 사용자 인증 상태 확인
+    const checkUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    checkUser();
+  }, []);
 
   const handleFormDataChange = (newFormData: InheritanceData) => {
     setFormData(newFormData);
@@ -64,6 +78,15 @@ export default function Home() {
 
       setFinalResult(result.data);
       setShowFinalResult(true);
+
+      // 로그인된 사용자인 경우 계산 기록 저장
+      if (user) {
+        try {
+          await saveCalculationRecord(user.id, data, result.data);
+        } catch (saveError) {
+          console.error('계산 기록 저장 실패:', saveError);
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
@@ -103,6 +126,20 @@ export default function Home() {
     });
   };
 
+  const handleAuthSuccess = () => {
+    // 인증 성공 후 사용자 정보 다시 가져오기
+    getCurrentUser().then(setUser);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* 헤더 */}
@@ -115,8 +152,30 @@ export default function Home() {
               </h1>
               <p className="text-gray-600">상속세 계산기</p>
             </div>
-            <div className="text-sm text-gray-500">
-              <p>2024년 기준</p>
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-500">
+                <p>2024년 기준</p>
+              </div>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">
+                    {user.email}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                >
+                  로그인
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -242,6 +301,13 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* 인증 모달 */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }

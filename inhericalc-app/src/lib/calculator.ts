@@ -37,9 +37,12 @@ export function calculateInheritanceTax(data: InheritanceData): TaxCalculationRe
   const taxableAmount = Math.max(0, netAssets - totalDeductions);
   
   // 6. 세율 및 세액 계산
-  const { taxRate, calculatedTax } = calculateTaxRate(taxableAmount);
+  const { taxRate, calculatedTax, progressiveDeduction } = calculateTaxRate(taxableAmount);
   
-  // 7. 최종 상속세 계산
+  // 7. 상속인별 세액 계산
+  const taxPerHeir = data.heirsCount > 0 ? calculatedTax / data.heirsCount : 0;
+  
+  // 8. 최종 상속세 계산
   const finalTax = calculatedTax;
   
   return {
@@ -49,7 +52,9 @@ export function calculateInheritanceTax(data: InheritanceData): TaxCalculationRe
     totalDeductions,
     taxableAmount,
     taxRate,
+    progressiveDeduction,
     calculatedTax,
+    taxPerHeir,
     finalTax,
     breakdown: {
       assets: totalAssets,
@@ -89,9 +94,9 @@ function calculateDeductions(deductions: InheritanceData['deductions'], netAsset
 /**
  * 세율 및 세액 계산
  */
-function calculateTaxRate(taxableAmount: number): { taxRate: number; calculatedTax: number } {
+function calculateTaxRate(taxableAmount: number): { taxRate: number; calculatedTax: number; progressiveDeduction: number } {
   if (taxableAmount <= 0) {
-    return { taxRate: 0, calculatedTax: 0 };
+    return { taxRate: 0, calculatedTax: 0, progressiveDeduction: 0 };
   }
   
   // 해당하는 세율 구간 찾기
@@ -100,7 +105,7 @@ function calculateTaxRate(taxableAmount: number): { taxRate: number; calculatedT
   );
   
   if (!taxBracket) {
-    return { taxRate: 0, calculatedTax: 0 };
+    return { taxRate: 0, calculatedTax: 0, progressiveDeduction: 0 };
   }
   
   // 세액 계산: (과세표준 × 세율) - 누진공제
@@ -108,7 +113,8 @@ function calculateTaxRate(taxableAmount: number): { taxRate: number; calculatedT
   
   return {
     taxRate: taxBracket.rate,
-    calculatedTax: Math.max(0, calculatedTax)
+    calculatedTax: Math.max(0, calculatedTax),
+    progressiveDeduction: taxBracket.deduction
   };
 }
 

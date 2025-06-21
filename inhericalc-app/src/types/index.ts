@@ -41,7 +41,9 @@ export interface TaxCalculationResult {
   totalDeductions: number;       // 총 공제액
   taxableAmount: number;         // 과세표준
   taxRate: number;               // 세율
+  progressiveDeduction: number;  // 누진공제
   calculatedTax: number;         // 산출세액
+  taxPerHeir: number;           // 상속인별 세액
   finalTax: number;              // 최종 상속세
   breakdown: {
     assets: number;
