@@ -10,17 +10,16 @@ interface StepFormProps {
 }
 
 const STEPS = [
-  { id: 1, title: '기본 정보', description: '피상속인 및 상속인 정보' },
-  { id: 2, title: '재산 정보', description: '부동산, 예금, 주식 등' },
-  { id: 3, title: '채무 정보', description: '장례비, 금융채무 등' },
-  { id: 4, title: '공제 항목', description: '적용 가능한 공제 선택' }
+  { id: 1, title: '재산 정보', description: '부동산, 예금, 주식 등' },
+  { id: 2, title: '채무 정보', description: '장례비, 금융채무 등' },
+  { id: 3, title: '공제 항목', description: '적용 가능한 공제 선택' }
 ];
 
 export default function StepForm({ onSubmit, loading = false, onFormDataChange }: StepFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<InheritanceData>({
     deathDate: new Date().toISOString().split('T')[0],
-    deceasedName: '',
+    deceasedName: '피상속인',
     heirsCount: 1,
     assets: {
       realEstate: 0,
@@ -44,17 +43,6 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
       basic: true
     }
   });
-
-  const handleInputChange = (field: string, value: string | number) => {
-    const updatedData = {
-      ...formData,
-      [field]: value
-    };
-    setFormData(updatedData);
-    if (onFormDataChange) {
-      onFormDataChange(updatedData);
-    }
-  };
 
   const handleAssetChange = (field: keyof InheritanceData['assets'], value: number) => {
     const updatedData = {
@@ -121,12 +109,10 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return formData.deathDate && formData.deceasedName && formData.heirsCount > 0;
-      case 2:
         return true; // 재산 정보는 선택사항
-      case 3:
+      case 2:
         return true; // 채무 정보는 선택사항
-      case 4:
+      case 3:
         return true; // 공제 항목은 선택사항
       default:
         return false;
@@ -136,57 +122,6 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">기본 정보 입력</h3>
-              <p className="text-gray-600">피상속인과 상속인에 대한 기본 정보를 입력해주세요</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  사망일 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={formData.deathDate}
-                  onChange={(e) => handleInputChange('deathDate', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  피상속인명 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.deceasedName}
-                  onChange={(e) => handleInputChange('deceasedName', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="이름을 입력하세요"
-                  required
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  상속인 수 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={formData.heirsCount}
-                  onChange={(e) => handleInputChange('heirsCount', parseInt(e.target.value) || 1)}
-                  min="1"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 2:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -203,7 +138,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.assets.realEstate.toLocaleString()}
                   onChange={(e) => handleAssetChange('realEstate', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -215,7 +150,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.assets.deposits.toLocaleString()}
                   onChange={(e) => handleAssetChange('deposits', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -227,7 +162,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.assets.stocks.toLocaleString()}
                   onChange={(e) => handleAssetChange('stocks', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -239,7 +174,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.assets.insurance.toLocaleString()}
                   onChange={(e) => handleAssetChange('insurance', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -251,7 +186,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.assets.business.toLocaleString()}
                   onChange={(e) => handleAssetChange('business', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -263,7 +198,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.assets.vehicles.toLocaleString()}
                   onChange={(e) => handleAssetChange('vehicles', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -275,7 +210,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.assets.other.toLocaleString()}
                   onChange={(e) => handleAssetChange('other', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -283,7 +218,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           </div>
         );
 
-      case 3:
+      case 2:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -300,7 +235,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.debts.funeral.toLocaleString()}
                   onChange={(e) => handleDebtChange('funeral', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -312,7 +247,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.debts.financial.toLocaleString()}
                   onChange={(e) => handleDebtChange('financial', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -324,7 +259,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.debts.taxes.toLocaleString()}
                   onChange={(e) => handleDebtChange('taxes', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -336,7 +271,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                   type="text"
                   value={formData.debts.other.toLocaleString()}
                   onChange={(e) => handleDebtChange('other', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="0"
                 />
               </div>
@@ -344,7 +279,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           </div>
         );
 
-      case 4:
+      case 3:
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -362,7 +297,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 />
                 <div className="ml-3">
                   <span className="text-sm font-medium text-gray-700">일괄공제</span>
-                  <p className="text-xs text-gray-500">1억원 공제</p>
+                  <p className="text-xs text-gray-500">2억원 공제</p>
                 </div>
               </label>
               
@@ -375,7 +310,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 />
                 <div className="ml-3">
                   <span className="text-sm font-medium text-gray-700">배우자공제</span>
-                  <p className="text-xs text-gray-500">5억원 공제</p>
+                  <p className="text-xs text-gray-500">6억원 공제</p>
                 </div>
               </label>
               

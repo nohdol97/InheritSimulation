@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { calculateInheritanceTax, formatCurrency } from '@/lib/calculator';
 import CalculationBreakdown from './CalculationBreakdown';
+import TaxReport from './TaxReport';
 
 interface LiveCalculationProps {
   formData: InheritanceData;
@@ -13,6 +14,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
   const [result, setResult] = useState<TaxCalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
     const calculateTax = async () => {
@@ -40,6 +42,65 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
     const timeoutId = setTimeout(calculateTax, 500);
     return () => clearTimeout(timeoutId);
   }, [formData]);
+
+  const handleDownloadPDF = async () => {
+    if (!result) return;
+
+    setIsGeneratingPDF(true);
+    
+    try {
+      // 동적으로 라이브러리 임포트
+      const jsPDF = (await import('jspdf')).default;
+      const html2canvas = (await import('html2canvas')).default;
+
+      // 숨겨진 TaxReport 요소 찾기
+      const hiddenTaxReport = document.querySelector('#hidden-tax-report');
+      if (!hiddenTaxReport) {
+        throw new Error('PDF 생성용 요소를 찾을 수 없습니다.');
+      }
+
+      // HTML을 Canvas로 변환
+      const canvas = await html2canvas(hiddenTaxReport as HTMLElement, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: 800,
+        height: 1200
+      });
+
+      // PDF 생성
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // PDF 다운로드
+      const fileName = `상속세신고서_${formData.deceasedName || '피상속인'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+
+    } catch (error) {
+      console.error('PDF 생성 오류:', error);
+      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   if (!result) {
     return (
@@ -147,13 +208,32 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
             </div>
           </div>
 
-          {/* 계산 과정 보기 버튼 */}
-          <div className="text-center">
+          {/* 버튼들 */}
+          <div className="flex justify-center space-x-3">
             <button
               onClick={() => setShowBreakdown(!showBreakdown)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
               {showBreakdown ? '간단히 보기' : '계산 과정 상세 보기'}
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              {isGeneratingPDF ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>PDF 생성 중...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>PDF 다운로드</span>
+                </>
+              )}
             </button>
           </div>
 
@@ -170,6 +250,11 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
       {showBreakdown && (
         <CalculationBreakdown formData={formData} calculationResult={result} />
       )}
+
+      {/* PDF용 숨겨진 TaxReport 컴포넌트 */}
+      <div id="hidden-tax-report" style={{ position: 'absolute', left: '-9999px', top: '0', width: '800px' }}>
+        <TaxReport formData={formData} calculationResult={result} />
+      </div>
     </div>
   );
 } 

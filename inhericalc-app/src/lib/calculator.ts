@@ -1,6 +1,6 @@
 import { InheritanceData, TaxCalculationResult } from '@/types';
 
-// 상속세 세율 (2024년 기준)
+// 상속세 세율 (2025년 기준)
 const TAX_RATES = [
   { min: 0, max: 100000000, rate: 0.10, deduction: 0 },
   { min: 100000000, max: 500000000, rate: 0.20, deduction: 10000000 },
@@ -9,12 +9,12 @@ const TAX_RATES = [
   { min: 3000000000, max: Infinity, rate: 0.50, deduction: 460000000 }
 ];
 
-// 공제 금액 (2024년 기준)
+// 공제 금액 (2025년 기준)
 const DEDUCTION_AMOUNTS = {
-  spouse: 500000000,      // 배우자 공제
+  spouse: 600000000,      // 배우자 공제 - 6억원
   disabled: 100000000,    // 장애인 공제
   minor: 100000000,       // 미성년 공제
-  basic: 100000000        // 일괄 공제
+  basic: 200000000        // 일괄 공제 - 2억원
 };
 
 /**

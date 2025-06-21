@@ -154,7 +154,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-500">
-                <p>2024년 기준</p>
+                <p>2025년 기준</p>
               </div>
               {user ? (
                 <div className="flex items-center gap-3">
@@ -167,14 +167,28 @@ export default function Home() {
                   >
                     로그아웃
                   </button>
+                  <button
+                    onClick={() => window.open('mailto:expert@inhericalc.com?subject=전문가 상담 신청', '_blank')}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  >
+                    전문가 신청
+                  </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                >
-                  로그인
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    로그인
+                  </button>
+                  <button
+                    onClick={() => window.open('mailto:expert@inhericalc.com?subject=전문가 상담 신청', '_blank')}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  >
+                    전문가 신청
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -242,7 +256,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-semibold text-gray-700 mb-2">정확한 결과</h3>
                 <p className="text-sm text-gray-600">
-                  2024년 기준 상속세율과 공제를 적용한 정확한 계산
+                  2025년 기준 상속세율과 공제를 적용한 정확한 계산
                 </p>
               </div>
             </div>
@@ -270,11 +284,11 @@ export default function Home() {
                 <ul className="text-sm text-gray-600 space-y-2">
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                    <span>일괄공제: 1억원</span>
+                    <span>일괄공제: 2억원</span>
                   </li>
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                    <span>배우자공제: 5억원</span>
+                    <span>배우자공제: 6억원</span>
                   </li>
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
@@ -296,7 +310,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-sm text-gray-300">
-              © 2024 InheriCalc. 이 계산기는 참고용이며, 실제 상속세는 전문가와 상담하시기 바랍니다.
+              © 2025 InheriCalc. 이 계산기는 참고용이며, 실제 상속세는 전문가와 상담하시기 바랍니다.
             </p>
           </div>
         </div>
