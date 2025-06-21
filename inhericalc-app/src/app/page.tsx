@@ -5,6 +5,7 @@ import StepForm from '@/components/StepForm';
 import LiveCalculation from '@/components/LiveCalculation';
 import ResultSummary from '@/components/ResultSummary';
 import AuthModal from '@/components/AuthModal';
+import KakaoShareButton from '@/components/KakaoShareButton';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { getCurrentUser, saveCalculationRecord, signOut } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
@@ -292,6 +293,7 @@ export default function Home() {
                   >
                     전문가 신청
                   </Link>
+                  <KakaoShareButton className="text-sm" />
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -307,6 +309,7 @@ export default function Home() {
                   >
                     전문가 신청
                   </Link>
+                  <KakaoShareButton className="text-sm" />
                 </div>
               )}
             </div>
