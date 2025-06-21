@@ -130,4 +130,25 @@ export interface PresetExample {
   name: string;
   description: string;
   data: InheritanceData;
+}
+
+// 전문가 신청 관련 타입 정의
+export interface ExpertApplication {
+  id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  region: string;
+  profession: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ExpertApplicationFormData {
+  name: string;
+  email: string;
+  phone: string;
+  region: string;
+  profession: string;
 } 

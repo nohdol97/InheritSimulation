@@ -8,6 +8,7 @@ import AuthModal from '@/components/AuthModal';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { getCurrentUser, saveCalculationRecord, signOut } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
+import Link from 'next/link';
 
 export default function Home() {
   const [formData, setFormData] = useState<InheritanceData>({
@@ -102,8 +103,14 @@ export default function Home() {
   useEffect(() => {
     // 사용자 인증 상태 확인
     const checkUser = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        // 인증 오류는 무시 (비로그인 상태로 처리)
+        console.warn('사용자 인증 상태 확인 실패:', error);
+        setUser(null);
+      }
     };
     checkUser();
   }, []);
@@ -238,7 +245,12 @@ export default function Home() {
 
   const handleAuthSuccess = () => {
     // 인증 성공 후 사용자 정보 다시 가져오기
-    getCurrentUser().then(setUser);
+    getCurrentUser()
+      .then(setUser)
+      .catch((error) => {
+        console.warn('인증 성공 후 사용자 정보 조회 실패:', error);
+        setUser(null);
+      });
   };
 
   const handleLogout = async () => {
@@ -274,12 +286,12 @@ export default function Home() {
                   >
                     로그아웃
                   </button>
-                  <button
-                    onClick={() => window.open('mailto:expert@taxsimp.com?subject=전문가 상담 신청', '_blank')}
+                  <Link
+                    href="/expert"
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                   >
                     전문가 신청
-                  </button>
+                  </Link>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -289,12 +301,12 @@ export default function Home() {
                   >
                     로그인
                   </button>
-                  <button
-                    onClick={() => window.open('mailto:expert@taxsimp.com?subject=전문가 상담 신청', '_blank')}
+                  <Link
+                    href="/expert"
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                   >
                     전문가 신청
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>

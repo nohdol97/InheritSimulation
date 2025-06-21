@@ -9,7 +9,13 @@ let supabase: SupabaseClient | null = null;
 
 if (typeof window !== 'undefined' && supabaseUrl && supabaseAnonKey) {
   try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
   } catch (error) {
     console.error('Supabase 클라이언트 초기화 실패:', error);
   }
@@ -67,7 +73,7 @@ export async function getCalculationRecords(userId: string) {
   }
 }
 
-// 사용자 인증 상태 확인
+// 사용자 인증 상태 확인 (더 안전한 버전)
 export async function getCurrentUser() {
   if (!supabase) {
     console.warn('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
@@ -75,9 +81,21 @@ export async function getCurrentUser() {
   }
   
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    return user;
+    // 먼저 세션 확인
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.warn('세션 조회 오류:', sessionError.message);
+      return null;
+    }
+    
+    if (!session) {
+      // 세션이 없으면 null 반환 (에러가 아님)
+      return null;
+    }
+    
+    // 세션이 있으면 사용자 정보 반환
+    return session.user;
   } catch (error) {
     console.error('사용자 정보 조회 오류:', error);
     return null;
