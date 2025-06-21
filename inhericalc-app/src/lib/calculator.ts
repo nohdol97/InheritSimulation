@@ -22,10 +22,10 @@ const DEDUCTION_AMOUNTS = {
  */
 export function calculateInheritanceTax(data: InheritanceData): TaxCalculationResult {
   // 1. 총 재산가액 계산
-  const totalAssets = Object.values(data.assets).reduce((sum, value) => sum + value, 0);
+  const totalAssets = calculateTotalAssets(data.assets);
   
   // 2. 총 채무 계산
-  const totalDebts = Object.values(data.debts).reduce((sum, value) => sum + value, 0);
+  const totalDebts = calculateTotalDebts(data.debts);
   
   // 3. 순 재산가액 계산
   const netAssets = totalAssets - totalDebts;
@@ -63,6 +63,32 @@ export function calculateInheritanceTax(data: InheritanceData): TaxCalculationRe
       taxRate: taxRate * 100 // 퍼센트로 변환
     }
   };
+}
+
+/**
+ * 총 재산가액 계산
+ */
+function calculateTotalAssets(assets: InheritanceData['assets']): number {
+  const realEstateTotal = Object.values(assets.realEstate).reduce((sum, value) => sum + value, 0);
+  const financialTotal = Object.values(assets.financial).reduce((sum, value) => sum + value, 0);
+  const insuranceTotal = Object.values(assets.insurance).reduce((sum, value) => sum + value, 0);
+  const businessTotal = Object.values(assets.business).reduce((sum, value) => sum + value, 0);
+  const movablesTotal = Object.values(assets.movables).reduce((sum, value) => sum + value, 0);
+  const otherTotal = Object.values(assets.other).reduce((sum, value) => sum + value, 0);
+  
+  return realEstateTotal + financialTotal + insuranceTotal + businessTotal + movablesTotal + otherTotal;
+}
+
+/**
+ * 총 채무 계산
+ */
+function calculateTotalDebts(debts: InheritanceData['debts']): number {
+  const funeralTotal = Object.values(debts.funeral).reduce((sum, value) => sum + value, 0);
+  const financialTotal = Object.values(debts.financial).reduce((sum, value) => sum + value, 0);
+  const taxesTotal = Object.values(debts.taxes).reduce((sum, value) => sum + value, 0);
+  const otherTotal = Object.values(debts.other).reduce((sum, value) => sum + value, 0);
+  
+  return funeralTotal + financialTotal + taxesTotal + otherTotal;
 }
 
 /**

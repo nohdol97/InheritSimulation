@@ -1,7 +1,6 @@
 'use client';
 
 import { InheritanceData, TaxCalculationResult } from '@/types';
-import { formatCurrency } from '@/lib/calculator';
 
 interface TaxReportProps {
   formData: InheritanceData;
@@ -9,31 +8,61 @@ interface TaxReportProps {
 }
 
 export default function TaxReport({ formData, calculationResult }: TaxReportProps) {
-  const currentDate = new Date().toLocaleDateString('ko-KR');
-  
+  const formatCurrency = (amount: number): string => {
+    return amount.toLocaleString('ko-KR');
+  };
+
+  // 자산 계산 - 중첩된 객체 구조 처리
+  const realEstateTotal = Object.values(formData.assets.realEstate).reduce((sum, value) => sum + value, 0);
+  const financialTotal = Object.values(formData.assets.financial).reduce((sum, value) => sum + value, 0);
+  const insuranceTotal = Object.values(formData.assets.insurance).reduce((sum, value) => sum + value, 0);
+  const businessTotal = Object.values(formData.assets.business).reduce((sum, value) => sum + value, 0);
+  const movablesTotal = Object.values(formData.assets.movables).reduce((sum, value) => sum + value, 0);
+  const otherAssetsTotal = Object.values(formData.assets.other).reduce((sum, value) => sum + value, 0);
+
+  // 채무 계산 - 중첩된 객체 구조 처리
+  const funeralTotal = Object.values(formData.debts.funeral).reduce((sum, value) => sum + value, 0);
+  const financialDebtTotal = Object.values(formData.debts.financial).reduce((sum, value) => sum + value, 0);
+  const taxesTotal = Object.values(formData.debts.taxes).reduce((sum, value) => sum + value, 0);
+  const otherDebtsTotal = Object.values(formData.debts.other).reduce((sum, value) => sum + value, 0);
+
+  // 공제 계산
+  const basicDeduction = formData.deductions.basic ? 200000000 : 0;
+  const spouseDeduction = formData.deductions.spouse ? 600000000 : 0;
+  const disabledDeduction = formData.deductions.disabled ? 100000000 : 0;
+  const minorDeduction = formData.deductions.minor ? 100000000 : 0;
+
   return (
-    <div 
-      className="max-w-4xl mx-auto" 
-      style={{ 
-        fontSize: '12px', 
-        lineHeight: '1.4',
-        backgroundColor: '#ffffff',
-        color: '#000000',
-        padding: '32px'
-      }}
-    >
-      {/* 신고서 제목 */}
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', color: '#000000' }}>
-          상속세 과세표준 신고서
+    <div id="tax-report" style={{ 
+      backgroundColor: '#ffffff', 
+      padding: '40px', 
+      fontFamily: 'Arial, sans-serif',
+      color: '#000000',
+      lineHeight: '1.6'
+    }}>
+      {/* 헤더 */}
+      <div style={{ textAlign: 'center', marginBottom: '40px', borderBottom: '3px solid #2563eb', paddingBottom: '20px' }}>
+        <h1 style={{ 
+          fontSize: '28px', 
+          fontWeight: 'bold', 
+          margin: '0 0 8px 0',
+          color: '#1e40af'
+        }}>
+          상속세 신고서
         </h1>
-        <p style={{ fontSize: '14px', color: '#666666' }}>국세청 제출용</p>
+        <p style={{ 
+          fontSize: '16px', 
+          color: '#6b7280', 
+          margin: '0'
+        }}>
+          TaxSimp 상속세 계산 결과
+        </p>
       </div>
 
       {/* 기본 정보 */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h2 style={{ 
-          fontSize: '18px', 
+          fontSize: '20px', 
           fontWeight: 'bold', 
           marginBottom: '16px', 
           borderBottom: '2px solid #d1d5db', 
@@ -42,83 +71,34 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
         }}>
           1. 기본 정보
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <div>
-            <div style={{ marginBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#000000' }}>피상속인 성명:</span>
-              <span style={{ 
-                marginLeft: '8px', 
-                borderBottom: '1px solid #d1d5db', 
-                display: 'inline-block', 
-                width: '128px', 
-                textAlign: 'center',
-                color: '#000000'
-              }}>
-                {formData.deceasedName || '___________'}
-              </span>
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#000000' }}>사망일자:</span>
-              <span style={{ 
-                marginLeft: '8px', 
-                borderBottom: '1px solid #d1d5db', 
-                display: 'inline-block', 
-                width: '128px', 
-                textAlign: 'center',
-                color: '#000000'
-              }}>
-                {formData.deathDate || '___________'}
-              </span>
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#000000' }}>상속인 수:</span>
-              <span style={{ 
-                marginLeft: '8px', 
-                borderBottom: '1px solid #d1d5db', 
-                display: 'inline-block', 
-                width: '64px', 
-                textAlign: 'center',
-                color: '#000000'
-              }}>
-                {formData.heirsCount || '___'}
-              </span>명
-            </div>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(3, 1fr)', 
+          gap: '16px',
+          backgroundColor: '#f9fafb',
+          padding: '16px',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <div style={{ padding: '8px' }}>
+            <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>피상속인</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#000000' }}>{formData.deceasedName}</div>
           </div>
-          <div>
-            <div style={{ marginBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#000000' }}>신고일자:</span>
-              <span style={{ 
-                marginLeft: '8px', 
-                borderBottom: '1px solid #d1d5db', 
-                display: 'inline-block', 
-                width: '128px', 
-                textAlign: 'center',
-                color: '#000000'
-              }}>
-                {currentDate}
-              </span>
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <span style={{ fontWeight: '600', color: '#000000' }}>신고인:</span>
-              <span style={{ 
-                marginLeft: '8px', 
-                borderBottom: '1px solid #d1d5db', 
-                display: 'inline-block', 
-                width: '128px', 
-                textAlign: 'center',
-                color: '#000000'
-              }}>
-                ___________
-              </span>
-            </div>
+          <div style={{ padding: '8px' }}>
+            <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>사망일</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#000000' }}>{formData.deathDate}</div>
+          </div>
+          <div style={{ padding: '8px' }}>
+            <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>상속인 수</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#000000' }}>{formData.heirsCount}명</div>
           </div>
         </div>
       </div>
 
       {/* 재산 내역 */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h2 style={{ 
-          fontSize: '18px', 
+          fontSize: '20px', 
           fontWeight: 'bold', 
           marginBottom: '16px', 
           borderBottom: '2px solid #d1d5db', 
@@ -130,56 +110,50 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #d1d5db' }}>
           <thead>
             <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <th style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'left', color: '#000000' }}>재산 종류</th>
-              <th style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>금액 (원)</th>
+              <th style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'left', color: '#000000', fontWeight: 'bold' }}>재산 종류</th>
+              <th style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#000000', fontWeight: 'bold' }}>금액 (원)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>부동산</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.assets?.realEstate || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>부동산</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(realEstateTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>예금</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.assets?.deposits || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>금융자산</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(financialTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>주식</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.assets?.stocks || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>보험</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(insuranceTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>보험금</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.assets?.insurance || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>사업자산</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(businessTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>사업체</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.assets?.business || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>동산</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(movablesTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>차량</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.assets?.vehicles || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>기타 재산</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(otherAssetsTotal)}
               </td>
             </tr>
-            <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>기타 재산</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.assets?.other || 0)}
-              </td>
-            </tr>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: 'bold', color: '#000000' }}>총 재산가액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#000000' }}>
+            <tr style={{ backgroundColor: '#dbeafe' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', fontWeight: 'bold', color: '#000000' }}>총 재산가액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', fontWeight: 'bold', color: '#1d4ed8' }}>
                 {formatCurrency(calculationResult.totalAssets)}
               </td>
             </tr>
@@ -188,9 +162,9 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
       </div>
 
       {/* 채무 내역 */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h2 style={{ 
-          fontSize: '18px', 
+          fontSize: '20px', 
           fontWeight: 'bold', 
           marginBottom: '16px', 
           borderBottom: '2px solid #d1d5db', 
@@ -202,38 +176,38 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #d1d5db' }}>
           <thead>
             <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <th style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'left', color: '#000000' }}>채무 종류</th>
-              <th style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>금액 (원)</th>
+              <th style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'left', color: '#000000', fontWeight: 'bold' }}>채무 종류</th>
+              <th style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#000000', fontWeight: 'bold' }}>금액 (원)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>장례비</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.debts?.funeral || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>장례비</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(funeralTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>금융채무</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.debts?.financial || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>금융채무</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(financialDebtTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>세금 미납액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.debts?.taxes || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>세금 미납액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(taxesTotal)}
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>기타 채무</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.debts?.other || 0)}
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>기타 채무</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                {formatCurrency(otherDebtsTotal)}
               </td>
             </tr>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: 'bold', color: '#000000' }}>총 채무액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#000000' }}>
+            <tr style={{ backgroundColor: '#fef2f2' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', fontWeight: 'bold', color: '#000000' }}>총 채무액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', fontWeight: 'bold', color: '#dc2626' }}>
                 {formatCurrency(calculationResult.totalDebts)}
               </td>
             </tr>
@@ -242,9 +216,9 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
       </div>
 
       {/* 계산 결과 */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h2 style={{ 
-          fontSize: '18px', 
+          fontSize: '20px', 
           fontWeight: 'bold', 
           marginBottom: '16px', 
           borderBottom: '2px solid #d1d5db', 
@@ -256,50 +230,50 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #d1d5db' }}>
           <tbody>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: '600', color: '#000000' }}>총 재산가액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: '600', color: '#000000', width: '50%' }}>총 재산가액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#000000' }}>
                 {formatCurrency(calculationResult.totalAssets)}원
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: '600', color: '#000000' }}>총 채무액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#dc2626' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: '600', color: '#000000' }}>총 채무액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#dc2626' }}>
                 -{formatCurrency(calculationResult.totalDebts)}원
               </td>
             </tr>
             <tr style={{ backgroundColor: '#dbeafe' }}>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: 'bold', color: '#000000' }}>순 재산가액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#000000' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: 'bold', color: '#000000' }}>순 재산가액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#1d4ed8' }}>
                 {formatCurrency(calculationResult.netAssets)}원
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: '600', color: '#000000' }}>공제액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#16a34a' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: '600', color: '#000000' }}>공제액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#16a34a' }}>
                 -{formatCurrency(calculationResult.totalDeductions)}원
               </td>
             </tr>
             <tr style={{ backgroundColor: '#fef3c7' }}>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: 'bold', color: '#000000' }}>과세표준</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#000000' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: 'bold', color: '#000000' }}>과세표준</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#d97706' }}>
                 {formatCurrency(calculationResult.taxableAmount)}원
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: '600', color: '#000000' }}>적용 세율</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: '600', color: '#000000' }}>적용 세율</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#000000' }}>
                 {(calculationResult.taxRate * 100).toFixed(1)}%
               </td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: '600', color: '#000000' }}>산출세액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: '600', color: '#000000' }}>산출세액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#000000' }}>
                 {formatCurrency(calculationResult.calculatedTax)}원
               </td>
             </tr>
             <tr style={{ backgroundColor: '#dcfce7' }}>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: 'bold', fontSize: '18px', color: '#000000' }}>최종 상속세액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', fontWeight: 'bold', fontSize: '18px', color: '#16a34a' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', fontWeight: 'bold', fontSize: '18px', color: '#000000' }}>최종 상속세액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', fontWeight: 'bold', fontSize: '18px', color: '#16a34a' }}>
                 {formatCurrency(calculationResult.finalTax)}원
               </td>
             </tr>
@@ -308,9 +282,9 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
       </div>
 
       {/* 공제 내역 상세 */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h2 style={{ 
-          fontSize: '18px', 
+          fontSize: '20px', 
           fontWeight: 'bold', 
           marginBottom: '16px', 
           borderBottom: '2px solid #d1d5db', 
@@ -322,30 +296,46 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #d1d5db' }}>
           <thead>
             <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <th style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'left', color: '#000000' }}>공제 종류</th>
-              <th style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>공제액 (원)</th>
+              <th style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'left', color: '#000000', fontWeight: 'bold' }}>공제 종류</th>
+              <th style={{ border: '1px solid #d1d5db', padding: '12px', textAlign: 'right', color: '#000000', fontWeight: 'bold' }}>공제액 (원)</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>기초공제</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>200,000,000</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>인적공제 (상속인 수 × 5천만원)</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formatCurrency(formData.heirsCount * 50000000)}
-              </td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', color: '#000000' }}>배우자공제</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', color: '#000000' }}>
-                {formData.deductions?.spouse ? formatCurrency(Math.min(calculationResult.netAssets * 0.3, 3000000000)) : '0'}
-              </td>
-            </tr>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', fontWeight: 'bold', color: '#000000' }}>총 공제액</td>
-              <td style={{ border: '1px solid #d1d5db', padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#000000' }}>
+            {formData.deductions.basic && (
+              <tr>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>일괄공제</td>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                  {formatCurrency(basicDeduction)}
+                </td>
+              </tr>
+            )}
+            {formData.deductions.spouse && (
+              <tr>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>배우자공제</td>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                  {formatCurrency(spouseDeduction)}
+                </td>
+              </tr>
+            )}
+            {formData.deductions.disabled && (
+              <tr>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>장애인공제</td>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                  {formatCurrency(disabledDeduction)}
+                </td>
+              </tr>
+            )}
+            {formData.deductions.minor && (
+              <tr>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', color: '#000000' }}>미성년공제</td>
+                <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', color: '#000000' }}>
+                  {formatCurrency(minorDeduction)}
+                </td>
+              </tr>
+            )}
+            <tr style={{ backgroundColor: '#f0fdf4' }}>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', fontWeight: 'bold', color: '#000000' }}>총 공제액</td>
+              <td style={{ border: '1px solid #d1d5db', padding: '10px', textAlign: 'right', fontWeight: 'bold', color: '#16a34a' }}>
                 {formatCurrency(calculationResult.totalDeductions)}
               </td>
             </tr>
@@ -353,36 +343,55 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
         </table>
       </div>
 
-      {/* 서명란 */}
-      <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #d1d5db' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <p style={{ marginBottom: '16px', color: '#000000' }}>위와 같이 신고합니다.</p>
-            <p style={{ fontSize: '14px', color: '#666666' }}>
-              신고일: {currentDate}
-            </p>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ borderBottom: '1px solid #d1d5db', width: '128px', marginBottom: '8px', paddingBottom: '8px' }}>
-              <span style={{ fontSize: '14px', color: '#666666' }}>신고인 서명</span>
+      {/* 상속인별 세액 */}
+      <div style={{ marginBottom: '32px' }}>
+        <h2 style={{ 
+          fontSize: '20px', 
+          fontWeight: 'bold', 
+          marginBottom: '16px', 
+          borderBottom: '2px solid #d1d5db', 
+          paddingBottom: '8px',
+          color: '#000000'
+        }}>
+          6. 상속인별 세액
+        </h2>
+        <div style={{ 
+          backgroundColor: '#f8fafc',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid #e2e8f0'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '16px', color: '#64748b', marginBottom: '4px' }}>상속인 수</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000000' }}>{formData.heirsCount}명</div>
             </div>
-            <div style={{ width: '128px', height: '32px' }}></div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '16px', color: '#64748b', marginBottom: '4px' }}>상속인별 세액</div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#059669' }}>
+                {formatCurrency(calculationResult.taxPerHeir)}원
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 주의사항 */}
+      {/* 푸터 */}
       <div style={{ 
-        marginTop: '24px', 
-        padding: '16px', 
-        backgroundColor: '#f9fafb', 
-        border: '1px solid #e5e7eb', 
-        borderRadius: '4px' 
+        marginTop: '40px', 
+        paddingTop: '20px', 
+        borderTop: '2px solid #e5e7eb',
+        textAlign: 'center',
+        color: '#6b7280'
       }}>
-        <p style={{ fontSize: '12px', color: '#666666' }}>
-          <strong>주의사항:</strong> 본 신고서는 InheriCalc 상속세 계산기를 통해 자동 생성된 것으로, 
-          실제 국세청 제출 전 세무 전문가의 검토를 받으시기 바랍니다. 
-          정확한 세액 계산을 위해서는 국세청 홈텍스 또는 세무서에 문의하시기 바랍니다.
+        <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+          본 계산서는 TaxSimp에서 제공하는 상속세 추정 계산 결과입니다.
+        </p>
+        <p style={{ margin: '0', fontSize: '12px' }}>
+          정확한 세액은 세무 전문가와 상담하시기 바랍니다.
+        </p>
+        <p style={{ margin: '8px 0 0 0', fontSize: '12px' }}>
+          생성일: {new Date().toLocaleDateString('ko-KR')}
         </p>
       </div>
     </div>

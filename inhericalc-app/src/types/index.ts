@@ -6,23 +6,96 @@ export interface InheritanceData {
   deceasedName: string;
   heirsCount: number;
   
-  // 재산 정보
+  // 재산 정보 - 더 디테일하게 확장
   assets: {
-    realEstate: number;    // 부동산
-    deposits: number;      // 예금
-    stocks: number;        // 주식
-    insurance: number;     // 보험금
-    business: number;      // 사업체
-    vehicles: number;      // 차량
-    other: number;         // 기타
+    // 부동산
+    realEstate: {
+      residential: number;    // 주거용 부동산
+      commercial: number;     // 상업용 부동산
+      land: number;          // 토지
+      other: number;         // 기타 부동산
+    };
+    
+    // 금융자산
+    financial: {
+      deposits: number;       // 예금
+      savings: number;        // 적금
+      bonds: number;          // 채권
+      funds: number;          // 펀드
+      stocks: number;         // 주식
+      crypto: number;         // 암호화폐
+    };
+    
+    // 보험 및 연금
+    insurance: {
+      life: number;           // 생명보험
+      annuity: number;        // 연금보험
+      other: number;          // 기타 보험
+    };
+    
+    // 사업 관련
+    business: {
+      shares: number;         // 사업지분
+      equipment: number;      // 사업용 자산
+      inventory: number;      // 재고자산
+      receivables: number;    // 매출채권
+    };
+    
+    // 동산
+    movables: {
+      vehicles: number;       // 차량
+      jewelry: number;        // 귀금속/보석
+      art: number;           // 미술품/골동품
+      electronics: number;    // 전자제품
+      furniture: number;      // 가구/가전
+      other: number;         // 기타 동산
+    };
+    
+    // 기타 재산
+    other: {
+      intellectual: number;   // 지식재산권
+      membership: number;     // 회원권
+      deposits_guarantee: number; // 보증금
+      loans_receivable: number;   // 대여금
+      other: number;         // 기타
+    };
   };
   
-  // 채무 정보
+  // 채무 정보 - 더 디테일하게 확장
   debts: {
-    funeral: number;       // 장례비
-    financial: number;     // 금융채무
-    taxes: number;         // 세금 미납
-    other: number;         // 기타 채무
+    // 장례 관련
+    funeral: {
+      ceremony: number;       // 장례식 비용
+      burial: number;         // 매장/화장 비용
+      memorial: number;       // 제사/추모 비용
+      other: number;         // 기타 장례비
+    };
+    
+    // 금융 채무
+    financial: {
+      mortgage: number;       // 주택담보대출
+      credit_loan: number;    // 신용대출
+      card_debt: number;      // 신용카드 채무
+      installment: number;    // 할부금
+      other_loans: number;    // 기타 대출
+    };
+    
+    // 세금 및 공과금
+    taxes: {
+      income_tax: number;     // 소득세
+      property_tax: number;   // 재산세
+      local_tax: number;      // 지방세
+      health_insurance: number; // 건강보험료
+      other: number;         // 기타 세금
+    };
+    
+    // 기타 채무
+    other: {
+      guarantee: number;      // 보증채무
+      trade_payable: number;  // 매입채무
+      lease: number;         // 임대보증금
+      other: number;         // 기타 채무
+    };
   };
   
   // 공제 정보

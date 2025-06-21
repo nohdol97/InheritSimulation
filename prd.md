@@ -1,6 +1,6 @@
 1. Project Overview
 
-앱 이름: InheriCalc (Inheritance Tax Calculator)
+앱 이름: InheritCalculator (Inheritance Tax Calculator)
 
 목적: 사용자가 간단한 입력만으로 본인의 상속세 부담을 미리 계산하고, 가족 구성과 재산 내역을 반영한 맞춤형 시뮬레이션 결과를 확인할 수 있는 웹 기반 서비스 제공
 

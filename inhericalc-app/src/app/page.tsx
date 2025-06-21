@@ -15,19 +15,74 @@ export default function Home() {
     deceasedName: '',
     heirsCount: 1,
     assets: {
-      realEstate: 0,
-      deposits: 0,
-      stocks: 0,
-      insurance: 0,
-      business: 0,
-      vehicles: 0,
-      other: 0
+      realEstate: {
+        residential: 0,
+        commercial: 0,
+        land: 0,
+        other: 0
+      },
+      financial: {
+        deposits: 0,
+        savings: 0,
+        bonds: 0,
+        funds: 0,
+        stocks: 0,
+        crypto: 0
+      },
+      insurance: {
+        life: 0,
+        annuity: 0,
+        other: 0
+      },
+      business: {
+        shares: 0,
+        equipment: 0,
+        inventory: 0,
+        receivables: 0
+      },
+      movables: {
+        vehicles: 0,
+        jewelry: 0,
+        art: 0,
+        electronics: 0,
+        furniture: 0,
+        other: 0
+      },
+      other: {
+        intellectual: 0,
+        membership: 0,
+        deposits_guarantee: 0,
+        loans_receivable: 0,
+        other: 0
+      }
     },
     debts: {
-      funeral: 0,
-      financial: 0,
-      taxes: 0,
-      other: 0
+      funeral: {
+        ceremony: 0,
+        burial: 0,
+        memorial: 0,
+        other: 0
+      },
+      financial: {
+        mortgage: 0,
+        credit_loan: 0,
+        card_debt: 0,
+        installment: 0,
+        other_loans: 0
+      },
+      taxes: {
+        income_tax: 0,
+        property_tax: 0,
+        local_tax: 0,
+        health_insurance: 0,
+        other: 0
+      },
+      other: {
+        guarantee: 0,
+        trade_payable: 0,
+        lease: 0,
+        other: 0
+      }
     },
     deductions: {
       spouse: false,
@@ -103,19 +158,74 @@ export default function Home() {
       deceasedName: '',
       heirsCount: 1,
       assets: {
-        realEstate: 0,
-        deposits: 0,
-        stocks: 0,
-        insurance: 0,
-        business: 0,
-        vehicles: 0,
-        other: 0
+        realEstate: {
+          residential: 0,
+          commercial: 0,
+          land: 0,
+          other: 0
+        },
+        financial: {
+          deposits: 0,
+          savings: 0,
+          bonds: 0,
+          funds: 0,
+          stocks: 0,
+          crypto: 0
+        },
+        insurance: {
+          life: 0,
+          annuity: 0,
+          other: 0
+        },
+        business: {
+          shares: 0,
+          equipment: 0,
+          inventory: 0,
+          receivables: 0
+        },
+        movables: {
+          vehicles: 0,
+          jewelry: 0,
+          art: 0,
+          electronics: 0,
+          furniture: 0,
+          other: 0
+        },
+        other: {
+          intellectual: 0,
+          membership: 0,
+          deposits_guarantee: 0,
+          loans_receivable: 0,
+          other: 0
+        }
       },
       debts: {
-        funeral: 0,
-        financial: 0,
-        taxes: 0,
-        other: 0
+        funeral: {
+          ceremony: 0,
+          burial: 0,
+          memorial: 0,
+          other: 0
+        },
+        financial: {
+          mortgage: 0,
+          credit_loan: 0,
+          card_debt: 0,
+          installment: 0,
+          other_loans: 0
+        },
+        taxes: {
+          income_tax: 0,
+          property_tax: 0,
+          local_tax: 0,
+          health_insurance: 0,
+          other: 0
+        },
+        other: {
+          guarantee: 0,
+          trade_payable: 0,
+          lease: 0,
+          other: 0
+        }
       },
       deductions: {
         spouse: false,
@@ -148,14 +258,11 @@ export default function Home() {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                InheriCalc
+                TaxSimp
               </h1>
-              <p className="text-gray-600">상속세 계산기</p>
+              <p className="text-gray-600">2025년 기준 상속세 계산기</p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-sm text-gray-500">
-                <p>2025년 기준</p>
-              </div>
               {user ? (
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600">
@@ -168,7 +275,7 @@ export default function Home() {
                     로그아웃
                   </button>
                   <button
-                    onClick={() => window.open('mailto:expert@inhericalc.com?subject=전문가 상담 신청', '_blank')}
+                    onClick={() => window.open('mailto:expert@taxsimp.com?subject=전문가 상담 신청', '_blank')}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                   >
                     전문가 신청
@@ -183,7 +290,7 @@ export default function Home() {
                     로그인
                   </button>
                   <button
-                    onClick={() => window.open('mailto:expert@inhericalc.com?subject=전문가 상담 신청', '_blank')}
+                    onClick={() => window.open('mailto:expert@taxsimp.com?subject=전문가 상담 신청', '_blank')}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                   >
                     전문가 신청
@@ -310,7 +417,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-sm text-gray-300">
-              © 2025 InheriCalc. 이 계산기는 참고용이며, 실제 상속세는 전문가와 상담하시기 바랍니다.
+              © 2025 InheritCalculator. 이 계산기는 참고용이며, 실제 상속세는 전문가와 상담하시기 바랍니다.
             </p>
           </div>
         </div>

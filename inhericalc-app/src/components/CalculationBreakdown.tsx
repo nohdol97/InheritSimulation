@@ -19,8 +19,23 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
     );
   }
 
-  const totalAssets = Object.values(formData.assets).reduce((sum, value) => sum + value, 0);
-  const totalDebts = Object.values(formData.debts).reduce((sum, value) => sum + value, 0);
+  // 자산 계산 - 중첩된 객체 구조 처리
+  const realEstateTotal = Object.values(formData.assets.realEstate).reduce((sum, value) => sum + value, 0);
+  const financialTotal = Object.values(formData.assets.financial).reduce((sum, value) => sum + value, 0);
+  const insuranceTotal = Object.values(formData.assets.insurance).reduce((sum, value) => sum + value, 0);
+  const businessTotal = Object.values(formData.assets.business).reduce((sum, value) => sum + value, 0);
+  const movablesTotal = Object.values(formData.assets.movables).reduce((sum, value) => sum + value, 0);
+  const otherAssetsTotal = Object.values(formData.assets.other).reduce((sum, value) => sum + value, 0);
+  
+  const totalAssets = realEstateTotal + financialTotal + insuranceTotal + businessTotal + movablesTotal + otherAssetsTotal;
+
+  // 채무 계산 - 중첩된 객체 구조 처리
+  const funeralTotal = Object.values(formData.debts.funeral).reduce((sum, value) => sum + value, 0);
+  const financialDebtTotal = Object.values(formData.debts.financial).reduce((sum, value) => sum + value, 0);
+  const taxesTotal = Object.values(formData.debts.taxes).reduce((sum, value) => sum + value, 0);
+  const otherDebtsTotal = Object.values(formData.debts.other).reduce((sum, value) => sum + value, 0);
+  
+  const totalDebts = funeralTotal + financialDebtTotal + taxesTotal + otherDebtsTotal;
   
   // 공제 계산
   const basicDeduction = formData.deductions.basic ? 200000000 : 0; // 2025년 기준 2억원
@@ -40,31 +55,27 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
           <div className="bg-gray-50 p-3 rounded-lg space-y-2 text-sm">
             <div className="flex justify-between text-gray-800">
               <span>부동산:</span>
-              <span>{formData.assets.realEstate.toLocaleString()}원</span>
+              <span>{realEstateTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
-              <span>예금:</span>
-              <span>{formData.assets.deposits.toLocaleString()}원</span>
+              <span>금융자산:</span>
+              <span>{financialTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
-              <span>주식:</span>
-              <span>{formData.assets.stocks.toLocaleString()}원</span>
+              <span>보험:</span>
+              <span>{insuranceTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
-              <span>보험금:</span>
-              <span>{formData.assets.insurance.toLocaleString()}원</span>
+              <span>사업자산:</span>
+              <span>{businessTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
-              <span>사업체:</span>
-              <span>{formData.assets.business.toLocaleString()}원</span>
-            </div>
-            <div className="flex justify-between text-gray-800">
-              <span>차량:</span>
-              <span>{formData.assets.vehicles.toLocaleString()}원</span>
+              <span>동산:</span>
+              <span>{movablesTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
               <span>기타 재산:</span>
-              <span>{formData.assets.other.toLocaleString()}원</span>
+              <span>{otherAssetsTotal.toLocaleString()}원</span>
             </div>
             <div className="border-t pt-2 flex justify-between font-medium text-gray-800">
               <span>총 재산가액:</span>
@@ -79,19 +90,19 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
           <div className="bg-gray-50 p-3 rounded-lg space-y-2 text-sm">
             <div className="flex justify-between text-gray-800">
               <span>장례비:</span>
-              <span>{formData.debts.funeral.toLocaleString()}원</span>
+              <span>{funeralTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
               <span>금융채무:</span>
-              <span>{formData.debts.financial.toLocaleString()}원</span>
+              <span>{financialDebtTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
               <span>세금 미납:</span>
-              <span>{formData.debts.taxes.toLocaleString()}원</span>
+              <span>{taxesTotal.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between text-gray-800">
               <span>기타 채무:</span>
-              <span>{formData.debts.other.toLocaleString()}원</span>
+              <span>{otherDebtsTotal.toLocaleString()}원</span>
             </div>
             <div className="border-t pt-2 flex justify-between font-medium text-gray-800">
               <span>총 채무:</span>
@@ -203,21 +214,33 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
             </div>
           </div>
         </div>
-      </div>
 
-      {/* 세율 정보 */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h4 className="font-medium text-gray-800 mb-2">2025년 상속세율</h4>
-        <div className="text-sm text-gray-800 space-y-1">
-          <div>1억원 이하: 10%</div>
-          <div>1억원 초과 ~ 5억원 이하: 20%</div>
-          <div>5억원 초과 ~ 10억원 이하: 30%</div>
-          <div>10억원 초과 ~ 30억원 이하: 40%</div>
-          <div>30억원 초과: 50%</div>
+        {/* 세율 정보 */}
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h4 className="font-medium text-gray-800 mb-2">📊 2025년 상속세율</h4>
+          <div className="text-sm text-gray-800 space-y-1">
+            <div>• 1억원 이하: 10%</div>
+            <div>• 5억원 이하: 20%</div>
+            <div>• 10억원 이하: 30%</div>
+            <div>• 30억원 이하: 40%</div>
+            <div>• 30억원 초과: 50%</div>
+          </div>
+          <div className="mt-3 text-sm text-gray-600">
+            <div>✓ 일괄공제: 2억원</div>
+            <div>✓ 배우자공제: 6억원</div>
+            <div>✓ 장애인/미성년공제: 각 1억원</div>
+          </div>
         </div>
-        <div className="mt-3 text-xs text-gray-600 border-t pt-2">
-          <div>※ 일괄공제: 2억원 (2025년 기준)</div>
-          <div>※ 배우자공제: 6억원 (2025년 기준)</div>
+
+        {/* 최종 결과 */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-lg text-white">
+          <h4 className="font-medium mb-2">💰 최종 계산 결과</h4>
+          <div className="text-lg font-bold">
+            예상 상속세: {calculationResult.calculatedTax.toLocaleString()}원
+          </div>
+          <div className="text-sm opacity-90 mt-1">
+            상속인별 세액: {calculationResult.taxPerHeir.toLocaleString()}원
+          </div>
         </div>
       </div>
     </div>

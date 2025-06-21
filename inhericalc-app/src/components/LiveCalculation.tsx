@@ -15,6 +15,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
   const [isCalculating, setIsCalculating] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   useEffect(() => {
     const calculateTax = async () => {
@@ -42,6 +43,23 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
     const timeoutId = setTimeout(calculateTax, 500);
     return () => clearTimeout(timeoutId);
   }, [formData]);
+
+  // 공유 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showShareMenu) {
+        const target = event.target as Element;
+        if (!target.closest('.share-menu-container')) {
+          setShowShareMenu(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showShareMenu]);
 
   const handleDownloadPDF = async () => {
     if (!result) return;
@@ -102,6 +120,54 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
     }
   };
 
+  const handleShare = async (type: 'url' | 'kakao') => {
+    if (!result) return;
+
+    if (type === 'url') {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('URL이 클립보드에 복사되었습니다.');
+      } catch (error) {
+        console.error('URL 복사 실패:', error);
+        alert('URL 복사에 실패했습니다.');
+      }
+    } else if (type === 'kakao') {
+      // 카카오톡 공유
+      if (typeof window !== 'undefined' && window.Kakao) {
+        try {
+          window.Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+              title: 'TaxSimp 상속세 계산 결과',
+              description: `상속세: ${formatCurrency(result.finalTax)}원\n과세표준: ${formatCurrency(result.taxableAmount)}원\n세율: ${(result.taxRate * 100).toFixed(1)}%`,
+              imageUrl: 'https://taxsimp.vercel.app/og-image.png',
+              link: {
+                mobileWebUrl: window.location.href,
+                webUrl: window.location.href,
+              },
+            },
+            buttons: [
+              {
+                title: '결과 보기',
+                link: {
+                  mobileWebUrl: window.location.href,
+                  webUrl: window.location.href,
+                },
+              },
+            ],
+          });
+        } catch (error) {
+          console.error('카카오톡 공유 실패:', error);
+          alert('카카오톡 공유에 실패했습니다.');
+        }
+      } else {
+        alert('카카오톡 공유 기능을 사용할 수 없습니다.');
+      }
+    }
+
+    setShowShareMenu(false);
+  };
+
   if (!result) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
@@ -150,7 +216,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
         <div className="p-6 space-y-6">
           {/* 최종 상속세 */}
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">예상 상속세</p>
+            <p className="text-sm text-gray-900 mb-2">예상 상속세</p>
             <p className="text-3xl font-bold text-green-600">
               {formatCurrency(finalTax)}원
             </p>
@@ -174,36 +240,36 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
 
           {/* 상세 내역 */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-gray-700">상세 내역</h4>
+            <h4 className="font-semibold text-gray-900">상세 내역</h4>
             
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">총 재산가액</span>
-                <span>{formatCurrency(totalAssets)}원</span>
+                <span className="text-gray-900">총 재산가액</span>
+                <span className="text-gray-900">{formatCurrency(totalAssets)}원</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">총 채무</span>
+                <span className="text-gray-900">총 채무</span>
                 <span className="text-red-600">-{formatCurrency(totalDebts)}원</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium">순 재산가액</span>
-                <span className="font-medium">{formatCurrency(netAssets)}원</span>
+                <span className="font-medium text-gray-900">순 재산가액</span>
+                <span className="font-medium text-gray-900">{formatCurrency(netAssets)}원</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">공제액</span>
+                <span className="text-gray-900">공제액</span>
                 <span className="text-green-600">-{formatCurrency(totalDeductions)}원</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium">과세표준</span>
-                <span className="font-medium">{formatCurrency(taxableAmount)}원</span>
+                <span className="font-medium text-gray-900">과세표준</span>
+                <span className="font-medium text-gray-900">{formatCurrency(taxableAmount)}원</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">적용 세율</span>
-                <span>{(taxRate * 100).toFixed(1)}%</span>
+                <span className="text-gray-900">적용 세율</span>
+                <span className="text-gray-900">{(taxRate * 100).toFixed(1)}%</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium">산출세액</span>
-                <span className="font-medium">{formatCurrency(calculatedTax)}원</span>
+                <span className="font-medium text-gray-900">산출세액</span>
+                <span className="font-medium text-gray-900">{formatCurrency(calculatedTax)}원</span>
               </div>
             </div>
           </div>
@@ -214,7 +280,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
               onClick={() => setShowBreakdown(!showBreakdown)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
-              {showBreakdown ? '간단히 보기' : '계산 과정 상세 보기'}
+              {showBreakdown ? '간단히 보기' : '상세 보기'}
             </button>
             <button
               onClick={handleDownloadPDF}
@@ -235,6 +301,46 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
                 </>
               )}
             </button>
+            
+            {/* 공유하기 버튼 */}
+            <div className="relative share-menu-container">
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center space-x-2"
+                title="공유하기"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                </svg>
+                <span>공유하기</span>
+              </button>
+              
+              {/* 공유 메뉴 */}
+              {showShareMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  <div className="py-2">
+                    <button
+                      onClick={() => handleShare('url')}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      <span>URL 복사</span>
+                    </button>
+                    <button
+                      onClick={() => handleShare('kakao')}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
+                      </svg>
+                      <span>카카오톡 공유</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 주의사항 */}
@@ -246,7 +352,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
         </div>
       </div>
 
-      {/* 계산 과정 상세 보기 */}
+      {/* (계산 과정) 상세 보기 */}
       {showBreakdown && (
         <CalculationBreakdown formData={formData} calculationResult={result} />
       )}

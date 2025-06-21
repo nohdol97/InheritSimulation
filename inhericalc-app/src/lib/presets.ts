@@ -9,19 +9,74 @@ export const presetExamples: PresetExample[] = [
       deceasedName: "김철수",
       heirsCount: 2,
       assets: {
-        realEstate: 300000000,    // 3억
-        deposits: 100000000,      // 1억
-        stocks: 20000000,         // 2천만원
-        insurance: 10000000,      // 1천만원
-        business: 0,
-        vehicles: 5000000,        // 5백만원
-        other: 15000000           // 1천5백만원
+        realEstate: {
+          residential: 300000000,
+          commercial: 0,
+          land: 0,
+          other: 0
+        },
+        financial: {
+          deposits: 100000000,
+          savings: 0,
+          bonds: 0,
+          funds: 0,
+          stocks: 20000000,
+          crypto: 0
+        },
+        insurance: {
+          life: 10000000,
+          annuity: 0,
+          other: 0
+        },
+        business: {
+          shares: 0,
+          equipment: 0,
+          inventory: 0,
+          receivables: 0
+        },
+        movables: {
+          vehicles: 5000000,
+          jewelry: 0,
+          art: 0,
+          electronics: 0,
+          furniture: 0,
+          other: 0
+        },
+        other: {
+          intellectual: 0,
+          membership: 0,
+          deposits_guarantee: 0,
+          loans_receivable: 0,
+          other: 15000000
+        }
       },
       debts: {
-        funeral: 5000000,         // 5백만원
-        financial: 10000000,      // 1천만원
-        taxes: 0,
-        other: 0
+        funeral: {
+          ceremony: 3000000,
+          burial: 2000000,
+          memorial: 0,
+          other: 0
+        },
+        financial: {
+          mortgage: 10000000,
+          credit_loan: 0,
+          card_debt: 0,
+          installment: 0,
+          other_loans: 0
+        },
+        taxes: {
+          income_tax: 0,
+          property_tax: 0,
+          local_tax: 0,
+          health_insurance: 0,
+          other: 0
+        },
+        other: {
+          guarantee: 0,
+          trade_payable: 0,
+          lease: 0,
+          other: 0
+        }
       },
       deductions: {
         spouse: true,
@@ -39,19 +94,74 @@ export const presetExamples: PresetExample[] = [
       deceasedName: "박영희",
       heirsCount: 3,
       assets: {
-        realEstate: 1000000000,   // 10억
-        deposits: 500000000,      // 5억
-        stocks: 500000000,        // 5억
-        insurance: 50000000,      // 5천만원
-        business: 100000000,      // 1억
-        vehicles: 20000000,       // 2천만원
-        other: 200000000          // 2억
+        realEstate: {
+          residential: 700000000,
+          commercial: 300000000,
+          land: 0,
+          other: 0
+        },
+        financial: {
+          deposits: 500000000,
+          savings: 0,
+          bonds: 0,
+          funds: 0,
+          stocks: 500000000,
+          crypto: 0
+        },
+        insurance: {
+          life: 50000000,
+          annuity: 0,
+          other: 0
+        },
+        business: {
+          shares: 100000000,
+          equipment: 0,
+          inventory: 0,
+          receivables: 0
+        },
+        movables: {
+          vehicles: 20000000,
+          jewelry: 0,
+          art: 0,
+          electronics: 0,
+          furniture: 0,
+          other: 0
+        },
+        other: {
+          intellectual: 0,
+          membership: 0,
+          deposits_guarantee: 0,
+          loans_receivable: 0,
+          other: 200000000
+        }
       },
       debts: {
-        funeral: 10000000,        // 1천만원
-        financial: 50000000,      // 5천만원
-        taxes: 20000000,          // 2천만원
-        other: 10000000           // 1천만원
+        funeral: {
+          ceremony: 5000000,
+          burial: 3000000,
+          memorial: 2000000,
+          other: 0
+        },
+        financial: {
+          mortgage: 30000000,
+          credit_loan: 20000000,
+          card_debt: 0,
+          installment: 0,
+          other_loans: 0
+        },
+        taxes: {
+          income_tax: 10000000,
+          property_tax: 5000000,
+          local_tax: 3000000,
+          health_insurance: 2000000,
+          other: 0
+        },
+        other: {
+          guarantee: 0,
+          trade_payable: 0,
+          lease: 0,
+          other: 10000000
+        }
       },
       deductions: {
         spouse: true,
@@ -69,19 +179,74 @@ export const presetExamples: PresetExample[] = [
       deceasedName: "이민수",
       heirsCount: 1,
       assets: {
-        realEstate: 100000000,    // 1억
-        deposits: 30000000,       // 3천만원
-        stocks: 5000000,          // 5백만원
-        insurance: 5000000,       // 5백만원
-        business: 0,
-        vehicles: 3000000,        // 3백만원
-        other: 2000000            // 2백만원
+        realEstate: {
+          residential: 100000000,
+          commercial: 0,
+          land: 0,
+          other: 0
+        },
+        financial: {
+          deposits: 30000000,
+          savings: 0,
+          bonds: 0,
+          funds: 0,
+          stocks: 5000000,
+          crypto: 0
+        },
+        insurance: {
+          life: 5000000,
+          annuity: 0,
+          other: 0
+        },
+        business: {
+          shares: 0,
+          equipment: 0,
+          inventory: 0,
+          receivables: 0
+        },
+        movables: {
+          vehicles: 3000000,
+          jewelry: 0,
+          art: 0,
+          electronics: 0,
+          furniture: 0,
+          other: 0
+        },
+        other: {
+          intellectual: 0,
+          membership: 0,
+          deposits_guarantee: 0,
+          loans_receivable: 0,
+          other: 2000000
+        }
       },
       debts: {
-        funeral: 3000000,         // 3백만원
-        financial: 5000000,       // 5백만원
-        taxes: 0,
-        other: 0
+        funeral: {
+          ceremony: 2000000,
+          burial: 1000000,
+          memorial: 0,
+          other: 0
+        },
+        financial: {
+          mortgage: 5000000,
+          credit_loan: 0,
+          card_debt: 0,
+          installment: 0,
+          other_loans: 0
+        },
+        taxes: {
+          income_tax: 0,
+          property_tax: 0,
+          local_tax: 0,
+          health_insurance: 0,
+          other: 0
+        },
+        other: {
+          guarantee: 0,
+          trade_payable: 0,
+          lease: 0,
+          other: 0
+        }
       },
       deductions: {
         spouse: false,
@@ -93,4 +258,4 @@ export const presetExamples: PresetExample[] = [
   }
 ];
 
-export const defaultInheritanceData = presetExamples[0].data; 
+export const defaultInheritanceData = presetExamples[0].data;
