@@ -5,7 +5,7 @@ import StepForm from '@/components/StepForm';
 import LiveCalculation from '@/components/LiveCalculation';
 import ResultSummary from '@/components/ResultSummary';
 import AuthModal from '@/components/AuthModal';
-import KakaoShareButton from '@/components/KakaoShareButton';
+// import KakaoShareButton from '@/components/KakaoShareButton';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { getCurrentUser, saveCalculationRecord, signOut } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
@@ -324,7 +324,7 @@ export default function Home() {
                   >
                     전문가 신청
                   </Link>
-                  <KakaoShareButton className="text-sm" />
+                  {/* <KakaoShareButton className="text-sm" /> */}
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -340,7 +340,7 @@ export default function Home() {
                   >
                     전문가 신청
                   </Link>
-                  <KakaoShareButton className="text-sm" />
+                  {/* <KakaoShareButton className="text-sm" /> */}
                 </div>
               )}
             </div>
@@ -414,69 +414,81 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <h3 className="font-semibold text-gray-700 mb-3">주요 공제</h3>
-                <ul className="text-sm text-gray-600 space-y-2">
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
-                    <span>일괄공제: 2억원</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
-                    <span>배우자공제: 6억원</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
-                    <span>장애인공제: 1억원</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
-                    <span>미성년공제: 1억원</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="lg:col-span-1">
-                <h3 className="font-semibold text-gray-700 mb-3">계산 방법</h3>
-                <ol className="text-sm text-gray-600 space-y-2">
-                  <li className="flex items-start">
-                    <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium mr-3 mt-0.5">1</span>
-                    <span>총 재산가액 - 총 채무 = 순 재산가액</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium mr-3 mt-0.5">2</span>
-                    <span>순 재산가액 - 공제액 = 과세표준</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium mr-3 mt-0.5">3</span>
-                    <span>과세표준 × 세율 - 누진공제 = 산출세액</span>
-                  </li>
-                </ol>
-              </div>
-              <div className="lg:col-span-1">
-                <h3 className="font-semibold text-gray-700 mb-3">세율 구간</h3>
-                <ul className="text-sm text-gray-600 space-y-2">
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
-                    <span>1억원 이하: 10%</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
-                    <span>5억원 이하: 20%</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
-                    <span>10억원 이하: 30%</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
-                    <span>30억원 이하: 40%</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
-                    <span>30억원 초과: 50%</span>
-                  </li>
-                </ul>
+            {/* 상세 정보 섹션 */}
+            <div className="mt-12">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">💰</span>
+                  </div>
+                  <h4 className="font-semibold text-gray-700 mb-3">주요 공제</h4>
+                  <ul className="text-sm text-gray-600 space-y-2 text-left">
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>일괄공제: 2억원</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>배우자공제: 6억원</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>장애인공제: 1억원</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>미성년공제: 1억원</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">🧮</span>
+                  </div>
+                  <h4 className="font-semibold text-gray-700 mb-3">계산 방법</h4>
+                  <ol className="text-sm text-gray-600 space-y-2 text-left">
+                    <li className="flex items-start">
+                      <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">1</span>
+                      <span>총 재산가액 - 총 채무 = 순 재산가액</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">2</span>
+                      <span>순 재산가액 - 공제액 = 과세표준</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="bg-blue-100 text-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">3</span>
+                      <span>과세표준 × 세율 - 누진공제 = 산출세액</span>
+                    </li>
+                  </ol>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">📈</span>
+                  </div>
+                  <h4 className="font-semibold text-gray-700 mb-3">세율 구간</h4>
+                  <ul className="text-sm text-gray-600 space-y-2 text-left">
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>1억원 이하: 10%</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>5억원 이하: 20%</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>10억원 이하: 30%</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>30억원 이하: 40%</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                      <span>30억원 초과: 50%</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

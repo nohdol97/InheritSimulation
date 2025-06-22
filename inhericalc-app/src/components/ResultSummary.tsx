@@ -2,7 +2,7 @@
 
 import { TaxCalculationResult } from '@/types';
 import { formatCurrency, formatPercentage } from '@/lib/calculator';
-import KakaoShareButton from './KakaoShareButton';
+// import KakaoShareButton from './KakaoShareButton';
 
 interface ResultSummaryProps {
   result: TaxCalculationResult;
@@ -26,11 +26,11 @@ export default function ResultSummary({ result, onReset }: ResultSummaryProps) {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">상속세 계산 결과</h2>
         <div className="flex gap-2">
-          <KakaoShareButton
+          {/* <KakaoShareButton
             title="TaxSimp 상속세 계산 결과"
             description={`상속세 계산 결과: ${formatCurrency(finalTax)}원 | 순 재산가액: ${formatCurrency(netAssets)}원 | 과세표준: ${formatCurrency(taxableAmount)}원`}
             className="text-sm"
-          />
+          /> */}
           <button
             onClick={onReset}
             className="px-4 py-2 text-sm bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
