@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import { InheritanceData } from '@/types';
+import { User } from '@supabase/supabase-js';
+import ExpertConsultModal from './ExpertConsultModal';
 
 interface StepFormProps {
   onSubmit: (data: InheritanceData) => void;
   loading?: boolean;
   onFormDataChange?: (data: InheritanceData) => void;
+  user?: User | null;
+  onShowAuthModal?: () => void;
 }
 
 const STEPS = [
@@ -17,8 +21,9 @@ const STEPS = [
   { id: 5, title: '공제항목', description: '적용 가능한 공제 선택' }
 ];
 
-export default function StepForm({ onSubmit, loading = false, onFormDataChange }: StepFormProps) {
+export default function StepForm({ onSubmit, loading = false, onFormDataChange, user, onShowAuthModal }: StepFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showExpertModal, setShowExpertModal] = useState(false);
   const [formData, setFormData] = useState<InheritanceData>({
     deathDate: new Date().toISOString().split('T')[0],
     deceasedName: '피상속인',
@@ -630,6 +635,20 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 💡 공제 항목은 중복 적용 가능하며, 상속세 계산 시 자동으로 반영됩니다.
               </p>
             </div>
+
+            {/* 전문가 상담 버튼 */}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setShowExpertModal(true)}
+                className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium flex items-center space-x-2 mx-auto whitespace-nowrap"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>전문가상담</span>
+              </button>
+            </div>
           </div>
         );
 
@@ -699,7 +718,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
             onClick={prevStep}
             disabled={currentStep === 1}
             className={`
-              px-6 py-3 rounded-lg font-medium transition-colors
+              px-6 py-3 rounded-lg font-medium transition-colors whitespace-nowrap
               ${currentStep === 1
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -715,7 +734,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
               onClick={handleFinalSubmit}
               disabled={loading || !canProceed()}
               className={`
-                px-8 py-3 rounded-lg font-medium transition-colors
+                px-8 py-3 rounded-lg font-medium transition-colors whitespace-nowrap
                 ${loading || !canProceed()
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
@@ -737,7 +756,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
               onClick={nextStep}
               disabled={!canProceed()}
               className={`
-                px-6 py-3 rounded-lg font-medium transition-colors
+                px-6 py-3 rounded-lg font-medium transition-colors whitespace-nowrap
                 ${!canProceed()
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
@@ -749,6 +768,14 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           )}
         </div>
       </div>
+
+      {/* 전문가 상담 모달 */}
+      <ExpertConsultModal 
+        isOpen={showExpertModal} 
+        onClose={() => setShowExpertModal(false)} 
+        user={user}
+        onShowAuthModal={onShowAuthModal}
+      />
     </div>
   );
 } 

@@ -133,13 +133,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           </button>
         </div>
 
-        {successMessage && (
+        {isLogin && successMessage && (
           <div className="mb-4 bg-green-50 border border-green-200 p-3 rounded-lg">
             <p className="text-green-700 text-sm">{successMessage}</p>
           </div>
         )}
 
-        {error && (
+        {isLogin && error && (
           <div className="mb-4 bg-red-50 border border-red-200 p-3 rounded-lg">
             <p className="text-red-700 text-sm">{error}</p>
           </div>
@@ -257,10 +257,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             </div>
           )}
 
+          {!isLogin && successMessage && (
+            <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+              <p className="text-green-700 text-sm">{successMessage}</p>
+            </div>
+          )}
+
+          {!isLogin && error && (
+            <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading || (!isLogin && (!agreeTerms || !agreePrivacy))}
-            className={`w-full text-white py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+            className={`w-full text-white py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap
               ${isLogin 
                 ? 'bg-blue-600 hover:bg-blue-700' 
                 : 'bg-green-600 hover:bg-green-700'
@@ -277,7 +289,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               setError('');
               setSuccessMessage('');
             }}
-            className="text-blue-600 hover:text-blue-700 text-sm"
+            className="text-blue-600 hover:text-blue-700 text-sm whitespace-nowrap"
           >
             {isLogin ? '계정이 없으신가요? 회원가입' : '이미 계정이 있으신가요? 로그인'}
           </button>

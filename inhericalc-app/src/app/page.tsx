@@ -5,6 +5,7 @@ import StepForm from '@/components/StepForm';
 import LiveCalculation from '@/components/LiveCalculation';
 import ResultSummary from '@/components/ResultSummary';
 import AuthModal from '@/components/AuthModal';
+import VisitorStats from '@/components/VisitorStats';
 // import KakaoShareButton from '@/components/KakaoShareButton';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { getCurrentUser, saveCalculationRecord, signOut } from '@/lib/supabase';
@@ -286,11 +287,25 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
+    // 로그아웃 확인 창 표시
+    const confirmed = window.confirm('정말 로그아웃 하시겠습니까?');
+    
+    if (!confirmed) {
+      return; // 사용자가 취소한 경우
+    }
+    
+    console.log('=== 로그아웃 시작 ===');
     try {
       await signOut();
       setUser(null);
+      console.log('로그아웃 성공');
+      
+      // 페이지 새로고침으로 완전히 초기화
+      window.location.reload();
     } catch (error) {
       console.error('로그아웃 오류:', error);
+      // 오류가 발생해도 사용자 상태는 초기화
+      setUser(null);
     }
   };
 
@@ -317,13 +332,13 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleLogout}
-                    className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                    className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors whitespace-nowrap cursor-pointer border border-gray-300 hover:border-gray-400"
                   >
                     로그아웃
                   </button>
                   <Link
                     href="/expert"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm whitespace-nowrap"
                   >
                     전문가 신청
                   </Link>
@@ -333,13 +348,13 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowAuthModal(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm whitespace-nowrap"
                   >
                     로그인
                   </button>
                   <Link
                     href="/expert"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm whitespace-nowrap"
                   >
                     전문가 신청
                   </Link>
@@ -354,13 +369,15 @@ export default function Home() {
       {/* 메인 콘텐츠 */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!showFinalResult ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* 단계별 입력 폼 */}
             <div>
               <StepForm 
                 onSubmit={handleCalculate} 
                 loading={loading}
                 onFormDataChange={handleFormDataChange}
+                user={user}
+                onShowAuthModal={() => setShowAuthModal(true)}
               />
               
               {/* 에러 메시지 */}
@@ -379,11 +396,23 @@ export default function Home() {
                 onSaveCalculation={handleSaveCalculation}
               />
             </div>
+
+            {/* 방문자 통계 */}
+            <div className="lg:col-span-1">
+              <VisitorStats />
+            </div>
           </div>
         ) : (
           /* 최종 결과 화면 */
           <div className="max-w-4xl mx-auto">
-            <ResultSummary result={finalResult!} onReset={handleReset} />
+            <ResultSummary 
+              result={finalResult!} 
+              formData={formData}
+              user={user}
+              onReset={handleReset}
+              onSaveCalculation={handleSaveCalculation}
+              onShowAuthModal={() => setShowAuthModal(true)}
+            />
           </div>
         )}
 

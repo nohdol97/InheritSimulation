@@ -222,7 +222,7 @@ export default function LiveCalculation({
     
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <div className="text-center text-gray-500">
+        <div className="text-center text-black">
           <div className="text-4xl mb-4">📊</div>
           <h3 className="text-lg font-medium mb-2">실시간 계산 결과</h3>
           <p className="text-sm">
@@ -251,14 +251,14 @@ export default function LiveCalculation({
     return (
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-xs text-gray-600 mb-1">예상 상속세</p>
+          <p className="text-xs text-black mb-1">예상 상속세</p>
           <p className="text-lg font-bold text-red-600">
             {Math.round(finalTax).toLocaleString()}원
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-gray-600 mb-1">과세표준</p>
-          <p className="text-sm font-medium text-gray-800">
+          <p className="text-xs text-black mb-1">과세표준</p>
+          <p className="text-sm font-medium text-black">
             {Math.round(taxableAmount).toLocaleString()}원
           </p>
         </div>
@@ -287,7 +287,7 @@ export default function LiveCalculation({
         <div className="p-6 space-y-6">
           {/* 최종 상속세 */}
           <div className="text-center">
-            <p className="text-sm text-gray-900 mb-2">예상 상속세</p>
+            <p className="text-sm text-black mb-2">예상 상속세</p>
             <p className="text-3xl font-bold text-green-600">
               {Math.round(finalTax).toLocaleString()}원
             </p>
@@ -311,36 +311,36 @@ export default function LiveCalculation({
 
           {/* 상세 내역 */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-gray-900">상세 내역</h4>
+            <h4 className="font-semibold text-black">상세 내역</h4>
             
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-900">총 재산가액</span>
-                <span className="text-gray-900">{Math.round(totalAssets).toLocaleString()}원</span>
+                <span className="text-black">총 재산가액</span>
+                <span className="text-black">{Math.round(totalAssets).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-900">총 채무</span>
+                <span className="text-black">총 채무</span>
                 <span className="text-red-600">-{Math.round(totalDebts).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium text-gray-900">순 재산가액</span>
-                <span className="font-medium text-gray-900">{Math.round(netAssets).toLocaleString()}원</span>
+                <span className="font-medium text-black">순 재산가액</span>
+                <span className="font-medium text-black">{Math.round(netAssets).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-900">공제액</span>
+                <span className="text-black">공제액</span>
                 <span className="text-green-600">-{Math.round(totalDeductions).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium text-gray-900">과세표준</span>
-                <span className="font-medium text-gray-900">{Math.round(taxableAmount).toLocaleString()}원</span>
+                <span className="font-medium text-black">과세표준</span>
+                <span className="font-medium text-black">{Math.round(taxableAmount).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-900">적용 세율</span>
-                <span className="text-gray-900">{(taxRate * 100).toFixed(1)}%</span>
+                <span className="text-black">적용 세율</span>
+                <span className="text-black">{(taxRate * 100).toFixed(1)}%</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium text-gray-900">산출세액</span>
-                <span className="font-medium text-gray-900">{Math.round(calculatedTax).toLocaleString()}원</span>
+                <span className="font-medium text-black">산출세액</span>
+                <span className="font-medium text-black">{Math.round(calculatedTax).toLocaleString()}원</span>
               </div>
             </div>
           </div>
@@ -349,14 +349,14 @@ export default function LiveCalculation({
           <div className="flex justify-center space-x-3">
             <button
               onClick={handleShowBreakdown}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm whitespace-nowrap"
             >
               {showBreakdown ? '간단히' : '상세히'}
             </button>
             <button
               onClick={handleDownloadPDF}
               disabled={isGeneratingPDF}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 whitespace-nowrap"
             >
               {isGeneratingPDF ? (
                 <>
@@ -377,7 +377,7 @@ export default function LiveCalculation({
             <div className="relative share-menu-container">
               <button
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center space-x-2"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center space-x-2 whitespace-nowrap"
                 title="공유"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -392,7 +392,7 @@ export default function LiveCalculation({
                   <div className="py-2">
                     <button
                       onClick={() => handleShare('url')}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                      className="w-full px-4 py-2 text-left text-sm text-black hover:bg-gray-100 flex items-center space-x-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />

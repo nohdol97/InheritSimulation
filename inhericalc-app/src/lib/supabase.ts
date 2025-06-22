@@ -271,15 +271,33 @@ export async function signInWithKakao() {
 
 // 로그아웃
 export async function signOut() {
+  console.log('=== Supabase signOut 시작 ===');
+  
   if (!supabase) {
-    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
+    console.warn('Supabase 클라이언트가 초기화되지 않았습니다. 로컬 스토리지만 정리합니다.');
+    // Supabase 클라이언트가 없어도 로컬 스토리지 정리
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+    }
+    return;
   }
   
   try {
+    console.log('Supabase auth.signOut 호출');
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase signOut 오류:', error);
+      throw error;
+    }
+    console.log('Supabase signOut 성공');
   } catch (error) {
     console.error('로그아웃 오류:', error);
+    // 오류가 발생해도 로컬 스토리지는 정리
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+    }
     throw error;
   }
 } 

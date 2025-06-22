@@ -28,7 +28,7 @@ export default function AgreementDetailModal({ open, onClose, title, content }: 
         <div className="p-4 border-t">
           <button 
             onClick={onClose} 
-            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
           >
             확인
           </button>

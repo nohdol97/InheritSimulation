@@ -89,7 +89,7 @@ export default function KakaoShareButton({
   return (
     <button
       onClick={handleKakaoShare}
-      className={`inline-flex items-center gap-2 px-4 py-2 bg-[#FEE500] text-black rounded-lg hover:opacity-90 transition-opacity ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 bg-[#FEE500] text-black rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap ${className}`}
     >
       <svg className="w-5 h-5" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path 

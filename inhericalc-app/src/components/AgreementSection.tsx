@@ -69,16 +69,18 @@ export default function AgreementSection({ value, onChange }: AgreementSectionPr
                 onChange={e => handleChange(a.key, e.target.checked)}
                 className="mr-2 h-5 w-5 text-blue-600 border-gray-300 rounded"
               />
-              <span className="text-gray-800 text-sm">
-                {a.label}
+              <div className="flex flex-col">
+                <span className="text-gray-800 text-sm">
+                  {a.label}
+                </span>
                 {a.key === 'marketing' && (
-                  <span className="ml-2 text-sm font-semibold text-red-600">5,000P 지급</span>
+                  <span className="text-xs font-semibold text-red-600 mt-1">5,000P 지급</span>
                 )}
-              </span>
+              </div>
             </div>
             <button
               type="button"
-              className="text-blue-600 underline text-xs"
+              className="text-blue-600 underline text-xs whitespace-nowrap"
               onClick={() => setModal({ key: a.key, open: true })}
             >상세보기</button>
             <AgreementDetailModal
