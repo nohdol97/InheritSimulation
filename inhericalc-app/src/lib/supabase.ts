@@ -129,7 +129,6 @@ export async function signUp(email: string, password: string, additionalData: {
   region: string; 
   agreeTerms: boolean; 
   agreePrivacy: boolean; 
-  agreePrivacyOptional: boolean;
   agreeMarketing: boolean; 
 }) {
   if (!supabase) {
@@ -147,7 +146,6 @@ export async function signUp(email: string, password: string, additionalData: {
           region: additionalData.region,
           agreeTerms: additionalData.agreeTerms,
           agreePrivacy: additionalData.agreePrivacy,
-          agreePrivacyOptional: additionalData.agreePrivacyOptional,
           agreeMarketing: additionalData.agreeMarketing
         }
       }
@@ -190,7 +188,6 @@ export async function updateUserProfile(userId: string, profileData: Partial<{
   region: string; 
   agreeTerms: boolean; 
   agreePrivacy: boolean; 
-  agreePrivacyOptional: boolean;
   agreeMarketing: boolean; 
 }>) {
   if (!supabase) {
@@ -205,7 +202,6 @@ export async function updateUserProfile(userId: string, profileData: Partial<{
       region?: string;
       agree_terms?: boolean;
       agree_privacy?: boolean;
-      agree_privacy_optional?: boolean;
       agree_marketing?: boolean;
     } = {
       updated_at: new Date().toISOString()
@@ -216,7 +212,6 @@ export async function updateUserProfile(userId: string, profileData: Partial<{
     if (profileData.region !== undefined) updateData.region = profileData.region;
     if (profileData.agreeTerms !== undefined) updateData.agree_terms = profileData.agreeTerms;
     if (profileData.agreePrivacy !== undefined) updateData.agree_privacy = profileData.agreePrivacy;
-    if (profileData.agreePrivacyOptional !== undefined) updateData.agree_privacy_optional = profileData.agreePrivacyOptional;
     if (profileData.agreeMarketing !== undefined) updateData.agree_marketing = profileData.agreeMarketing;
 
     const { data, error } = await supabase

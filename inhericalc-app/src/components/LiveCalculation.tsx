@@ -183,7 +183,7 @@ export default function LiveCalculation({
             content: {
               title: 'TaxSimp 상속세 계산 결과',
               description: `상속세: ${formatCurrency(result.finalTax)}원\n과세표준: ${formatCurrency(result.taxableAmount)}원\n세율: ${(result.taxRate * 100).toFixed(1)}%`,
-              imageUrl: 'https://taxsimp.vercel.app/og-image.png',
+              imageUrl: 'https://taxsimp.com/og-image.png',
               link: {
                 mobileWebUrl: window.location.href,
                 webUrl: window.location.href,

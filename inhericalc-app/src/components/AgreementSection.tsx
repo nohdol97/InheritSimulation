@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import AgreementDetailModal from './AgreementDetailModal';
-import { TERMS_OF_SERVICE, PRIVACY_REQUIRED, PRIVACY_OPTIONAL, MARKETING } from './agreements';
+import { TERMS_OF_SERVICE, PRIVACY_REQUIRED, MARKETING } from './agreements';
 
 const AGREEMENTS = [
   {
@@ -16,14 +16,8 @@ const AGREEMENTS = [
     content: PRIVACY_REQUIRED,
   },
   {
-    key: 'privacy_optional',
-    label: '[선택] 개인정보 수집 및 이용 동의',
-    required: false,
-    content: PRIVACY_OPTIONAL,
-  },
-  {
     key: 'marketing',
-    label: '[선택] 이벤트 및 혜택 정보 수신 동의',
+    label: '[선택] 마케팅 활용 동의',
     required: false,
     content: MARKETING,
   },
@@ -75,11 +69,16 @@ export default function AgreementSection({ value, onChange }: AgreementSectionPr
                 onChange={e => handleChange(a.key, e.target.checked)}
                 className="mr-2 h-5 w-5 text-blue-600 border-gray-300 rounded"
               />
-              <span className="text-gray-800 text-sm">{a.label}</span>
+              <span className="text-gray-800 text-sm">
+                {a.label}
+                {a.key === 'marketing' && (
+                  <span className="ml-2 text-sm font-semibold text-red-600">5,000P 지급</span>
+                )}
+              </span>
             </div>
             <button
               type="button"
-              className="text-blue-600 underline text-xs ml-2"
+              className="text-blue-600 underline text-xs"
               onClick={() => setModal({ key: a.key, open: true })}
             >상세보기</button>
             <AgreementDetailModal

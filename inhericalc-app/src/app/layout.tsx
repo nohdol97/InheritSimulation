@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://taxsimp.vercel.app'),
+  metadataBase: new URL('https://taxsimp.com'),
   title: "TaxSimp - 2025년 상속세 계산기 | 정확한 상속세 계산",
   description: "2025년 기준 상속세를 실시간으로 계산해보세요. 부동산, 금융자산, 기타자산을 포함한 정확한 상속세 계산기입니다. 무료로 사용 가능합니다.",
   keywords: "상속세, 상속세 계산기, 2025년 상속세, 상속세율, 상속세 공제, TaxSimp",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TaxSimp - 2025년 상속세 계산기",
     description: "2025년 기준 상속세를 실시간으로 계산해보세요. 정확한 상속세 계산기입니다.",
-    url: 'https://taxsimp.vercel.app',
+    url: 'https://taxsimp.com',
     siteName: 'TaxSimp',
     images: [
       {
