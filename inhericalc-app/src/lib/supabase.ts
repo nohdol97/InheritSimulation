@@ -23,7 +23,7 @@ if (typeof window !== 'undefined' && supabaseUrl && supabaseAnonKey) {
 
 export { supabase };
 
-// 계산 기록 저장
+// 계산 기록 저장 (Upsert)
 export async function saveCalculationRecord(userId: string, data: InheritanceData, result: TaxCalculationResult) {
   if (!supabase) {
     console.warn('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
@@ -31,17 +31,18 @@ export async function saveCalculationRecord(userId: string, data: InheritanceDat
   }
   
   try {
+    const recordToUpsert = {
+      user_id: userId,
+      input_data: data,
+      calculation_result: result,
+      updated_at: new Date().toISOString(),
+    };
+
     const { data: record, error } = await supabase
       .from('calculation_records')
-      .insert([
-        {
-          user_id: userId,
-          input_data: data,
-          calculation_result: result,
-          created_at: new Date().toISOString()
-        }
-      ])
-      .select();
+      .upsert(recordToUpsert)
+      .select()
+      .single();
 
     if (error) throw error;
     return record;
@@ -122,12 +123,13 @@ export async function signIn(email: string, password: string) {
 }
 
 // 회원가입
-export async function signUp(email: string, password: string, additionalData?: { 
+export async function signUp(email: string, password: string, additionalData: { 
   name: string; 
   phone: string; 
   region: string; 
   agreeTerms: boolean; 
   agreePrivacy: boolean; 
+  agreePrivacyOptional: boolean;
   agreeMarketing: boolean; 
 }) {
   if (!supabase) {
@@ -137,45 +139,31 @@ export async function signUp(email: string, password: string, additionalData?: {
   try {
     const { data, error } = await supabase.auth.signUp({
       email,
-      password
-    });
-    if (error) throw error;
-
-    // 회원가입 성공하고 사용자 정보가 있으면 프로필 저장
-    if (data.user && additionalData) {
-      try {
-        await saveUserProfile(data.user.id, {
-          email,
+      password,
+      options: {
+        data: {
           name: additionalData.name,
           phone: additionalData.phone,
           region: additionalData.region,
           agreeTerms: additionalData.agreeTerms,
           agreePrivacy: additionalData.agreePrivacy,
+          agreePrivacyOptional: additionalData.agreePrivacyOptional,
           agreeMarketing: additionalData.agreeMarketing
-        });
-      } catch (profileError) {
-        console.error('프로필 저장 오류:', profileError);
-        // 프로필 저장 실패해도 회원가입은 성공으로 처리
+        }
       }
-    }
-
+    });
+    
+    if (error) throw error;
     return data;
+
   } catch (error) {
     console.error('회원가입 오류:', error);
     throw error;
   }
 }
 
-// 사용자 프로필 저장
-export async function saveUserProfile(userId: string, profileData: { 
-  email: string; 
-  name: string; 
-  phone: string; 
-  region: string; 
-  agreeTerms: boolean; 
-  agreePrivacy: boolean; 
-  agreeMarketing: boolean; 
-}) {
+// 사용자 프로필 조회
+export async function getUserProfile(userId: string) {
   if (!supabase) {
     throw new Error('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
   }
@@ -183,26 +171,64 @@ export async function saveUserProfile(userId: string, profileData: {
   try {
     const { data, error } = await supabase
       .from('user_profiles')
-      .insert([
-        {
-          user_id: userId,
-          email: profileData.email,
-          name: profileData.name,
-          phone: profileData.phone,
-          region: profileData.region,
-          agree_terms: profileData.agreeTerms,
-          agree_privacy: profileData.agreePrivacy,
-          agree_marketing: profileData.agreeMarketing,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ])
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('프로필 조회 오류:', error);
+    return null;
+  }
+}
+
+// 사용자 프로필 업데이트
+export async function updateUserProfile(userId: string, profileData: Partial<{ 
+  name: string; 
+  phone: string; 
+  region: string; 
+  agreeTerms: boolean; 
+  agreePrivacy: boolean; 
+  agreePrivacyOptional: boolean;
+  agreeMarketing: boolean; 
+}>) {
+  if (!supabase) {
+    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
+  }
+  
+  try {
+    const updateData: {
+      updated_at: string;
+      name?: string;
+      phone?: string;
+      region?: string;
+      agree_terms?: boolean;
+      agree_privacy?: boolean;
+      agree_privacy_optional?: boolean;
+      agree_marketing?: boolean;
+    } = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (profileData.name !== undefined) updateData.name = profileData.name;
+    if (profileData.phone !== undefined) updateData.phone = profileData.phone;
+    if (profileData.region !== undefined) updateData.region = profileData.region;
+    if (profileData.agreeTerms !== undefined) updateData.agree_terms = profileData.agreeTerms;
+    if (profileData.agreePrivacy !== undefined) updateData.agree_privacy = profileData.agreePrivacy;
+    if (profileData.agreePrivacyOptional !== undefined) updateData.agree_privacy_optional = profileData.agreePrivacyOptional;
+    if (profileData.agreeMarketing !== undefined) updateData.agree_marketing = profileData.agreeMarketing;
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update(updateData)
+      .eq('user_id', userId)
       .select();
 
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('프로필 저장 오류:', error);
+    console.error('프로필 업데이트 오류:', error);
     throw error;
   }
 }

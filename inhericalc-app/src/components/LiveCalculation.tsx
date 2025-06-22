@@ -3,15 +3,24 @@
 import { useEffect, useState } from 'react';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { calculateInheritanceTax, formatCurrency } from '@/lib/calculator';
+import { saveCalculationRecord } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 import CalculationBreakdown from './CalculationBreakdown';
 import TaxReport from './TaxReport';
 
 interface LiveCalculationProps {
   formData: InheritanceData;
   isMobileBottomBar?: boolean;
+  user?: User | null;
+  onSaveCalculation?: () => void;
 }
 
-export default function LiveCalculation({ formData, isMobileBottomBar = false }: LiveCalculationProps) {
+export default function LiveCalculation({ 
+  formData, 
+  isMobileBottomBar = false, 
+  user,
+  onSaveCalculation 
+}: LiveCalculationProps) {
   const [result, setResult] = useState<TaxCalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -62,12 +71,39 @@ export default function LiveCalculation({ formData, isMobileBottomBar = false }:
     };
   }, [showShareMenu]);
 
+  // 계산 기록 저장 함수
+  const handleSaveCalculation = async () => {
+    if (!user || !result) return;
+    
+    try {
+      await saveCalculationRecord(user.id, formData, result);
+      onSaveCalculation?.();
+    } catch (error) {
+      console.error('계산 기록 저장 실패:', error);
+    }
+  };
+
+  // 상세히 버튼 클릭 핸들러
+  const handleShowBreakdown = () => {
+    setShowBreakdown(!showBreakdown);
+    // 로그인된 사용자인 경우 저장
+    if (user) {
+      handleSaveCalculation();
+    }
+  };
+
+  // PDF 다운로드 핸들러 수정
   const handleDownloadPDF = async () => {
     if (!result) return;
 
     setIsGeneratingPDF(true);
     
     try {
+      // 로그인된 사용자인 경우 저장
+      if (user) {
+        await handleSaveCalculation();
+      }
+
       // 동적으로 라이브러리 임포트
       const jsPDF = (await import('jspdf')).default;
       const html2canvas = (await import('html2canvas')).default;
@@ -121,8 +157,14 @@ export default function LiveCalculation({ formData, isMobileBottomBar = false }:
     }
   };
 
+  // 공유 핸들러 수정
   const handleShare = async (type: 'url' | 'kakao') => {
     if (!result) return;
+
+    // 로그인된 사용자인 경우 저장
+    if (user) {
+      await handleSaveCalculation();
+    }
 
     if (type === 'url') {
       try {
@@ -306,7 +348,7 @@ export default function LiveCalculation({ formData, isMobileBottomBar = false }:
           {/* 버튼들 */}
           <div className="flex justify-center space-x-3">
             <button
-              onClick={() => setShowBreakdown(!showBreakdown)}
+              onClick={handleShowBreakdown}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
               {showBreakdown ? '간단히' : '상세히'}

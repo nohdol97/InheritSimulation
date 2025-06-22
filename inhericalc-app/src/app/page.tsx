@@ -171,7 +171,7 @@ export default function Home() {
       setFinalResult(result.data);
       setShowFinalResult(true);
 
-      // 로그인된 사용자인 경우 계산 기록 저장
+      // 계산하기 버튼 클릭 시에만 저장
       if (user) {
         try {
           await saveCalculationRecord(user.id, data, result.data);
@@ -294,6 +294,12 @@ export default function Home() {
     }
   };
 
+  // 계산 저장 완료 콜백
+  const handleSaveCalculation = () => {
+    // 저장 완료 시 필요한 작업 (예: 토스트 메시지 등)
+    console.log('계산 기록이 저장되었습니다.');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* 헤더 */}
@@ -309,9 +315,6 @@ export default function Home() {
             <div className="flex items-center gap-4">
               {user ? (
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">
-                    {user.email}
-                  </span>
                   <button
                     onClick={handleLogout}
                     className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
@@ -370,7 +373,11 @@ export default function Home() {
 
             {/* 실시간 계산 결과 */}
             <div>
-              <LiveCalculation formData={formData} />
+              <LiveCalculation 
+                formData={formData} 
+                user={user}
+                onSaveCalculation={handleSaveCalculation}
+              />
             </div>
           </div>
         ) : (
@@ -527,7 +534,12 @@ export default function Home() {
           }}
         >
           <div className="px-4 py-3">
-            <LiveCalculation formData={formData} isMobileBottomBar={true} />
+            <LiveCalculation 
+              formData={formData} 
+              isMobileBottomBar={true} 
+              user={user}
+              onSaveCalculation={handleSaveCalculation}
+            />
           </div>
         </div>
       )}

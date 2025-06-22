@@ -41,11 +41,11 @@ interface AgreementSectionProps {
 export default function AgreementSection({ value, onChange }: AgreementSectionProps) {
   const [modal, setModal] = useState<{ key: string; open: boolean }>({ key: '', open: false });
 
-  const allChecked = AGREEMENTS.filter(a => a.required).every(a => value[a.key]);
+  const allChecked = AGREEMENTS.every(a => value[a.key]);
   const handleAll = (checked: boolean) => {
-    const next: AgreementState = { ...value };
+    const next: AgreementState = {};
     AGREEMENTS.forEach(a => {
-      if (a.required) next[a.key] = checked;
+      next[a.key] = checked;
     });
     onChange(next);
   };

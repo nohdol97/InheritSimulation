@@ -23,6 +23,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   const [successMessage, setSuccessMessage] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreePrivacyOptional, setAgreePrivacyOptional] = useState(false);
   const [agreeMarketing, setAgreeMarketing] = useState(false);
 
   const regions = [
@@ -56,6 +57,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   const handleAgreementChange = (value: { [key: string]: boolean }) => {
     setAgreeTerms(value.terms || false);
     setAgreePrivacy(value.privacy_required || false);
+    setAgreePrivacyOptional(value.privacy_optional || false);
     setAgreeMarketing(value.marketing || false);
   };
 
@@ -91,6 +93,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           region,
           agreeTerms,
           agreePrivacy,
+          agreePrivacyOptional,
           agreeMarketing
         });
         setSuccessMessage('회원가입이 완료되었습니다. 이제 로그인해주세요.');
@@ -102,6 +105,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         setRegion('');
         setAgreeTerms(false);
         setAgreePrivacy(false);
+        setAgreePrivacyOptional(false);
         setAgreeMarketing(false);
       }
     } catch (err) {
@@ -250,6 +254,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 value={{
                   terms: agreeTerms,
                   privacy_required: agreePrivacy,
+                  privacy_optional: agreePrivacyOptional,
                   marketing: agreeMarketing
                 }}
                 onChange={handleAgreementChange}
