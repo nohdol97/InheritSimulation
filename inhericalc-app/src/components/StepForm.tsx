@@ -62,7 +62,9 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
         membership: 0,
         deposits_guarantee: 0,
         loans_receivable: 0,
-        other: 0
+        other: 0,
+        gifts_real_estate: 0,
+        gifts_other: 0
       }
     },
     debts: {
@@ -94,23 +96,21 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
       }
     },
     deductions: {
+      basic: true,
       spouse: false,
       disabled: false,
-      minor: false,
-      basic: true
+      minor: false
     }
   });
 
-  const updateFormData = (newData: InheritanceData) => {
-    setFormData(newData);
-    if (onFormDataChange) {
-      onFormDataChange(newData);
-    }
+  const updateFormData = (newData: Partial<InheritanceData>) => {
+    const updatedData = { ...formData, ...newData };
+    setFormData(updatedData);
+    onFormDataChange?.(updatedData);
   };
 
   const handleRealEstateChange = (field: keyof InheritanceData['assets']['realEstate'], value: number) => {
-    const updatedData = {
-      ...formData,
+    updateFormData({
       assets: {
         ...formData.assets,
         realEstate: {
@@ -118,13 +118,11 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           [field]: value
         }
       }
-    };
-    updateFormData(updatedData);
+    });
   };
 
   const handleFinancialChange = (field: keyof InheritanceData['assets']['financial'], value: number) => {
-    const updatedData = {
-      ...formData,
+    updateFormData({
       assets: {
         ...formData.assets,
         financial: {
@@ -132,13 +130,11 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           [field]: value
         }
       }
-    };
-    updateFormData(updatedData);
+    });
   };
 
   const handleOtherAssetsChange = (type: 'insurance' | 'business' | 'movables' | 'other', field: string, value: number) => {
-    const updatedData = {
-      ...formData,
+    updateFormData({
       assets: {
         ...formData.assets,
         [type]: {
@@ -146,13 +142,11 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           [field]: value
         }
       }
-    };
-    updateFormData(updatedData);
+    });
   };
 
   const handleDebtChange = (type: 'funeral' | 'financial' | 'taxes' | 'other', field: string, value: number) => {
-    const updatedData = {
-      ...formData,
+    updateFormData({
       debts: {
         ...formData.debts,
         [type]: {
@@ -160,19 +154,16 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           [field]: value
         }
       }
-    };
-    updateFormData(updatedData);
+    });
   };
 
-  const handleDeductionChange = (field: keyof InheritanceData['deductions'], value: boolean) => {
-    const updatedData = {
-      ...formData,
+  const handleDeductionChange = (type: keyof InheritanceData['deductions'], value: boolean) => {
+    updateFormData({
       deductions: {
         ...formData.deductions,
-        [field]: value
+        [type]: value
       }
-    };
-    updateFormData(updatedData);
+    });
   };
 
   const nextStep = () => {
@@ -199,6 +190,10 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
     return value.replace(/[^\d]/g, '');
   };
 
+  const formatDisplayValue = (value: number) => {
+    return value === 0 ? '' : value.toLocaleString();
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1: // 부동산
@@ -206,57 +201,100 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
           <div className="space-y-6">
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">부동산</h3>
-              <p className="text-gray-600">소유하고 있는 부동산의 가액을 입력해주세요</p>
+              <p className="text-gray-600">주거용, 상업용, 토지 등 부동산 자산을 입력해주세요</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  주택 (원)
+                  주거용 부동산 (원)
+                  <span className="text-xs text-gray-500 block">아파트, 주택, 오피스텔 등</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.assets.realEstate.residential.toLocaleString()}
+                  value={formatDisplayValue(formData.assets.realEstate.residential)}
                   onChange={(e) => handleRealEstateChange('residential', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 800,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  상업용 부동산 (원)
+                  <span className="text-xs text-gray-500 block">상가, 사무실, 임대용 건물 등</span>
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.assets.realEstate.commercial)}
+                  onChange={(e) => handleRealEstateChange('commercial', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 500,000,000"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  상가/사무실 (원)
+                  토지 (원)
+                  <span className="text-xs text-gray-500 block">대지, 전답, 임야, 잡종지 등</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.assets.realEstate.commercial.toLocaleString()}
-                  onChange={(e) => handleRealEstateChange('commercial', parseInt(formatNumber(e.target.value)) || 0)}
+                  value={formatDisplayValue(formData.assets.realEstate.land)}
+                  onChange={(e) => handleRealEstateChange('land', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 300,000,000"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  토지 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formData.assets.realEstate.land.toLocaleString()}
-                  onChange={(e) => handleRealEstateChange('land', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 200,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   기타 부동산 (원)
+                  <span className="text-xs text-gray-500 block">펜션, 창고, 공장 등</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.assets.realEstate.other.toLocaleString()}
+                  value={formatDisplayValue(formData.assets.realEstate.other)}
                   onChange={(e) => handleRealEstateChange('other', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 100,000,000"
                 />
+              </div>
+            </div>
+            
+            {/* 10년 이내 증여재산 */}
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                10년 이내 증여재산 (선택)
+              </h4>
+              <p className="text-sm text-yellow-700 mb-3">
+                피상속인이 사망일 전 10년 이내에 상속인에게 증여한 재산이 있다면 입력해주세요
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    증여받은 부동산 (원)
+                  </label>
+                  <input
+                    type="text"
+                    value={formatDisplayValue(formData.assets.other.gifts_real_estate || 0)}
+                    onChange={(e) => handleOtherAssetsChange('other', 'gifts_real_estate', parseInt(formatNumber(e.target.value)) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                    placeholder="예: 200,000,000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    증여받은 기타재산 (원)
+                  </label>
+                  <input
+                    type="text"
+                    value={formatDisplayValue(formData.assets.other.gifts_other || 0)}
+                    onChange={(e) => handleOtherAssetsChange('other', 'gifts_other', parseInt(formatNumber(e.target.value)) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                    placeholder="예: 50,000,000"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -273,18 +311,26 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  예금/적금 (원)
+                  예금 (원)
                 </label>
                 <input
                   type="text"
-                  value={(formData.assets.financial.deposits + formData.assets.financial.savings).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleFinancialChange('deposits', value);
-                    handleFinancialChange('savings', 0);
-                  }}
+                  value={formatDisplayValue(formData.assets.financial.deposits)}
+                  onChange={(e) => handleFinancialChange('deposits', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 100,000,000"
+                  placeholder="예: 50,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  적금 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.assets.financial.savings)}
+                  onChange={(e) => handleFinancialChange('savings', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 30,000,000"
                 />
               </div>
               <div>
@@ -293,7 +339,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 </label>
                 <input
                   type="text"
-                  value={formData.assets.financial.stocks.toLocaleString()}
+                  value={formatDisplayValue(formData.assets.financial.stocks)}
                   onChange={(e) => handleFinancialChange('stocks', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 50,000,000"
@@ -301,18 +347,26 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  펀드/채권 (원)
+                  펀드 (원)
                 </label>
                 <input
                   type="text"
-                  value={(formData.assets.financial.funds + formData.assets.financial.bonds).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleFinancialChange('funds', value);
-                    handleFinancialChange('bonds', 0);
-                  }}
+                  value={formatDisplayValue(formData.assets.financial.funds)}
+                  onChange={(e) => handleFinancialChange('funds', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 30,000,000"
+                  placeholder="예: 20,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  채권 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.assets.financial.bonds)}
+                  onChange={(e) => handleFinancialChange('bonds', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 10,000,000"
                 />
               </div>
               <div>
@@ -321,7 +375,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 </label>
                 <input
                   type="text"
-                  value={formData.assets.financial.crypto.toLocaleString()}
+                  value={formatDisplayValue(formData.assets.financial.crypto)}
                   onChange={(e) => handleFinancialChange('crypto', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 10,000,000"
@@ -346,7 +400,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 </label>
                 <input
                   type="text"
-                  value={formData.assets.movables.vehicles.toLocaleString()}
+                  value={formatDisplayValue(formData.assets.movables.vehicles)}
                   onChange={(e) => handleOtherAssetsChange('movables', 'vehicles', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 30,000,000"
@@ -354,60 +408,60 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  보험금 (원)
+                  생명보험금 (원)
                 </label>
                 <input
                   type="text"
-                  value={(formData.assets.insurance.life + formData.assets.insurance.annuity + formData.assets.insurance.other).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleOtherAssetsChange('insurance', 'life', value);
-                    handleOtherAssetsChange('insurance', 'annuity', 0);
-                    handleOtherAssetsChange('insurance', 'other', 0);
-                  }}
+                  value={formatDisplayValue(formData.assets.insurance.life)}
+                  onChange={(e) => handleOtherAssetsChange('insurance', 'life', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 50,000,000"
+                  placeholder="예: 30,000,000"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  사업자산 (원)
+                  연금보험 (원)
                 </label>
                 <input
                   type="text"
-                  value={(formData.assets.business.shares + formData.assets.business.equipment + formData.assets.business.inventory + formData.assets.business.receivables).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleOtherAssetsChange('business', 'shares', value);
-                    handleOtherAssetsChange('business', 'equipment', 0);
-                    handleOtherAssetsChange('business', 'inventory', 0);
-                    handleOtherAssetsChange('business', 'receivables', 0);
-                  }}
+                  value={formatDisplayValue(formData.assets.insurance.annuity)}
+                  onChange={(e) => handleOtherAssetsChange('insurance', 'annuity', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 20,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  사업지분 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.assets.business.shares)}
+                  onChange={(e) => handleOtherAssetsChange('business', 'shares', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 100,000,000"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  기타 (원)
+                  보석/귀금속 (원)
                 </label>
                 <input
                   type="text"
-                  value={(formData.assets.movables.jewelry + formData.assets.movables.art + formData.assets.movables.electronics + formData.assets.movables.furniture + formData.assets.movables.other + formData.assets.other.intellectual + formData.assets.other.membership + formData.assets.other.deposits_guarantee + formData.assets.other.loans_receivable + formData.assets.other.other).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleOtherAssetsChange('other', 'other', value);
-                    // 다른 기타 항목들을 0으로 설정
-                    handleOtherAssetsChange('movables', 'jewelry', 0);
-                    handleOtherAssetsChange('movables', 'art', 0);
-                    handleOtherAssetsChange('movables', 'electronics', 0);
-                    handleOtherAssetsChange('movables', 'furniture', 0);
-                    handleOtherAssetsChange('movables', 'other', 0);
-                    handleOtherAssetsChange('other', 'intellectual', 0);
-                    handleOtherAssetsChange('other', 'membership', 0);
-                    handleOtherAssetsChange('other', 'deposits_guarantee', 0);
-                    handleOtherAssetsChange('other', 'loans_receivable', 0);
-                  }}
+                  value={formatDisplayValue(formData.assets.movables.jewelry)}
+                  onChange={(e) => handleOtherAssetsChange('movables', 'jewelry', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 10,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  기타 자산 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.assets.other.other)}
+                  onChange={(e) => handleOtherAssetsChange('other', 'other', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 20,000,000"
                 />
@@ -431,7 +485,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 </label>
                 <input
                   type="text"
-                  value={formData.debts.financial.mortgage.toLocaleString()}
+                  value={formatDisplayValue(formData.debts.financial.mortgage)}
                   onChange={(e) => handleDebtChange('financial', 'mortgage', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 200,000,000"
@@ -439,20 +493,26 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  기타 대출 (원)
+                  신용대출 (원)
                 </label>
                 <input
                   type="text"
-                  value={(formData.debts.financial.credit_loan + formData.debts.financial.card_debt + formData.debts.financial.installment + formData.debts.financial.other_loans).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleDebtChange('financial', 'credit_loan', value);
-                    handleDebtChange('financial', 'card_debt', 0);
-                    handleDebtChange('financial', 'installment', 0);
-                    handleDebtChange('financial', 'other_loans', 0);
-                  }}
+                  value={formatDisplayValue(formData.debts.financial.credit_loan)}
+                  onChange={(e) => handleDebtChange('financial', 'credit_loan', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 50,000,000"
+                  placeholder="예: 30,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  카드대금 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.debts.financial.card_debt)}
+                  onChange={(e) => handleDebtChange('financial', 'card_debt', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 5,000,000"
                 />
               </div>
               <div>
@@ -461,16 +521,22 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 </label>
                 <input
                   type="text"
-                  value={(formData.debts.funeral.ceremony + formData.debts.funeral.burial + formData.debts.funeral.memorial + formData.debts.funeral.other).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleDebtChange('funeral', 'ceremony', value);
-                    handleDebtChange('funeral', 'burial', 0);
-                    handleDebtChange('funeral', 'memorial', 0);
-                    handleDebtChange('funeral', 'other', 0);
-                  }}
+                  value={formatDisplayValue(formData.debts.funeral.ceremony)}
+                  onChange={(e) => handleDebtChange('funeral', 'ceremony', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 10,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  소득세 미납액 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.debts.taxes.income_tax)}
+                  onChange={(e) => handleDebtChange('taxes', 'income_tax', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 3,000,000"
                 />
               </div>
               <div>
@@ -479,20 +545,8 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                 </label>
                 <input
                   type="text"
-                  value={(formData.debts.taxes.income_tax + formData.debts.taxes.property_tax + formData.debts.taxes.local_tax + formData.debts.taxes.health_insurance + formData.debts.taxes.other + formData.debts.other.guarantee + formData.debts.other.trade_payable + formData.debts.other.lease + formData.debts.other.other).toLocaleString()}
-                  onChange={(e) => {
-                    const value = parseInt(formatNumber(e.target.value)) || 0;
-                    handleDebtChange('other', 'other', value);
-                    // 다른 채무 항목들을 0으로 설정
-                    handleDebtChange('taxes', 'income_tax', 0);
-                    handleDebtChange('taxes', 'property_tax', 0);
-                    handleDebtChange('taxes', 'local_tax', 0);
-                    handleDebtChange('taxes', 'health_insurance', 0);
-                    handleDebtChange('taxes', 'other', 0);
-                    handleDebtChange('other', 'guarantee', 0);
-                    handleDebtChange('other', 'trade_payable', 0);
-                    handleDebtChange('other', 'lease', 0);
-                  }}
+                  value={formatDisplayValue(formData.debts.other.other)}
+                  onChange={(e) => handleDebtChange('other', 'other', parseInt(formatNumber(e.target.value)) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   placeholder="예: 5,000,000"
                 />
@@ -509,14 +563,14 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
               <p className="text-gray-600">적용 가능한 공제를 선택해주세요</p>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-md mx-auto">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <label className="flex items-center">
                   <input
                     type="checkbox"
                     checked={formData.deductions.basic}
                     onChange={(e) => handleDeductionChange('basic', e.target.checked)}
-                    className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <div>
                     <span className="font-medium text-gray-900">일괄공제</span>
@@ -531,7 +585,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                     type="checkbox"
                     checked={formData.deductions.spouse}
                     onChange={(e) => handleDeductionChange('spouse', e.target.checked)}
-                    className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <div>
                     <span className="font-medium text-gray-900">배우자 공제</span>
@@ -546,7 +600,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                     type="checkbox"
                     checked={formData.deductions.disabled}
                     onChange={(e) => handleDeductionChange('disabled', e.target.checked)}
-                    className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <div>
                     <span className="font-medium text-gray-900">장애인 공제</span>
@@ -561,7 +615,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange }
                     type="checkbox"
                     checked={formData.deductions.minor}
                     onChange={(e) => handleDeductionChange('minor', e.target.checked)}
-                    className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <div>
                     <span className="font-medium text-gray-900">미성년 공제</span>

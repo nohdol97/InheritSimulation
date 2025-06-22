@@ -57,6 +57,8 @@ export interface InheritanceData {
       membership: number;     // 회원권
       deposits_guarantee: number; // 보증금
       loans_receivable: number;   // 대여금
+      gifts_real_estate: number;  // 10년 이내 증여받은 부동산
+      gifts_other: number;        // 10년 이내 증여받은 기타재산
       other: number;         // 기타
     };
   };

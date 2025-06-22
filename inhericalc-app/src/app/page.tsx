@@ -14,7 +14,7 @@ import Link from 'next/link';
 export default function Home() {
   const [formData, setFormData] = useState<InheritanceData>({
     deathDate: new Date().toISOString().split('T')[0],
-    deceasedName: '',
+    deceasedName: '피상속인',
     heirsCount: 1,
     assets: {
       realEstate: {
@@ -55,6 +55,8 @@ export default function Home() {
         membership: 0,
         deposits_guarantee: 0,
         loans_receivable: 0,
+        gifts_real_estate: 0,
+        gifts_other: 0,
         other: 0
       }
     },
@@ -100,6 +102,8 @@ export default function Home() {
   const [showFinalResult, setShowFinalResult] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showMobileBottomBar, setShowMobileBottomBar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     // 사용자 인증 상태 확인
@@ -115,6 +119,31 @@ export default function Home() {
     };
     checkUser();
   }, []);
+
+  // 스크롤 방향 감지
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // 스크롤이 충분히 움직였을 때만 상태 변경 (50px 이상)
+      if (Math.abs(currentScrollY - lastScrollY) > 50) {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          // 아래로 스크롤 중이고 충분히 스크롤했을 때 숨김
+          setShowMobileBottomBar(false);
+        } else if (currentScrollY < lastScrollY) {
+          // 위로 스크롤 중일 때 표시
+          setShowMobileBottomBar(true);
+        }
+        setLastScrollY(currentScrollY);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   const handleFormDataChange = (newFormData: InheritanceData) => {
     setFormData(newFormData);
@@ -163,7 +192,7 @@ export default function Home() {
     setShowFinalResult(false);
     setFormData({
       deathDate: new Date().toISOString().split('T')[0],
-      deceasedName: '',
+      deceasedName: '피상속인',
       heirsCount: 1,
       assets: {
         realEstate: {
@@ -204,6 +233,8 @@ export default function Home() {
           membership: 0,
           deposits_guarantee: 0,
           loans_receivable: 0,
+          gifts_real_estate: 0,
+          gifts_other: 0,
           other: 0
         }
       },
@@ -383,8 +414,29 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <h3 className="font-semibold text-gray-700 mb-3">주요 공제</h3>
+                <ul className="text-sm text-gray-600 space-y-2">
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
+                    <span>일괄공제: 2억원</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
+                    <span>배우자공제: 6억원</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
+                    <span>장애인공제: 1억원</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></span>
+                    <span>미성년공제: 1억원</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="lg:col-span-1">
                 <h3 className="font-semibold text-gray-700 mb-3">계산 방법</h3>
                 <ol className="text-sm text-gray-600 space-y-2">
                   <li className="flex items-start">
@@ -401,24 +453,28 @@ export default function Home() {
                   </li>
                 </ol>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-3">주요 공제</h3>
+              <div className="lg:col-span-1">
+                <h3 className="font-semibold text-gray-700 mb-3">세율 구간</h3>
                 <ul className="text-sm text-gray-600 space-y-2">
-                  <li className="flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                    <span>일괄공제: 2억원</span>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
+                    <span>1억원 이하: 10%</span>
                   </li>
-                  <li className="flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                    <span>배우자공제: 6억원</span>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
+                    <span>5억원 이하: 20%</span>
                   </li>
-                  <li className="flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                    <span>장애인공제: 1억원</span>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
+                    <span>10억원 이하: 30%</span>
                   </li>
-                  <li className="flex items-center">
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-                    <span>미성년공제: 1억원</span>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
+                    <span>30억원 이하: 40%</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></span>
+                    <span>30억원 초과: 50%</span>
                   </li>
                 </ul>
               </div>
@@ -444,6 +500,25 @@ export default function Home() {
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={handleAuthSuccess}
       />
+
+      {/* 모바일 하단 고정 바 */}
+      {!showFinalResult && (
+        <div 
+          className={`
+            fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40
+            lg:hidden transition-transform duration-300 ease-in-out
+            ${showMobileBottomBar ? 'transform translate-y-0' : 'transform translate-y-full'}
+          `}
+          style={{
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            bottom: 'env(keyboard-inset-height, 0px)'
+          }}
+        >
+          <div className="px-4 py-3">
+            <LiveCalculation formData={formData} isMobileBottomBar={true} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

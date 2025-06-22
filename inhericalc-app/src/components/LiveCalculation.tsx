@@ -8,9 +8,10 @@ import TaxReport from './TaxReport';
 
 interface LiveCalculationProps {
   formData: InheritanceData;
+  isMobileBottomBar?: boolean;
 }
 
-export default function LiveCalculation({ formData }: LiveCalculationProps) {
+export default function LiveCalculation({ formData, isMobileBottomBar = false }: LiveCalculationProps) {
   const [result, setResult] = useState<TaxCalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -169,6 +170,14 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
   };
 
   if (!result) {
+    if (isMobileBottomBar) {
+      return (
+        <div className="text-center text-gray-500">
+          <p className="text-sm">계산을 위해 정보를 입력해주세요</p>
+        </div>
+      );
+    }
+    
     return (
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="text-center text-gray-500">
@@ -195,6 +204,26 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
     finalTax
   } = result;
 
+  // 모바일 하단 바용 간단한 UI
+  if (isMobileBottomBar) {
+    return (
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-xs text-gray-600 mb-1">예상 상속세</p>
+          <p className="text-lg font-bold text-red-600">
+            {Math.round(finalTax).toLocaleString()}원
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-gray-600 mb-1">과세표준</p>
+          <p className="text-sm font-medium text-gray-800">
+            {Math.round(taxableAmount).toLocaleString()}원
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* 실시간 계산 결과 */}
@@ -218,7 +247,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
           <div className="text-center">
             <p className="text-sm text-gray-900 mb-2">예상 상속세</p>
             <p className="text-3xl font-bold text-green-600">
-              {formatCurrency(finalTax)}원
+              {Math.round(finalTax).toLocaleString()}원
             </p>
           </div>
 
@@ -227,13 +256,13 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-xs text-blue-600 mb-1">순 재산가액</p>
               <p className="text-lg font-semibold text-blue-800">
-                {formatCurrency(netAssets)}원
+                {Math.round(netAssets).toLocaleString()}원
               </p>
             </div>
             <div className="bg-yellow-50 p-4 rounded-lg">
               <p className="text-xs text-yellow-600 mb-1">과세표준</p>
               <p className="text-lg font-semibold text-yellow-800">
-                {formatCurrency(taxableAmount)}원
+                {Math.round(taxableAmount).toLocaleString()}원
               </p>
             </div>
           </div>
@@ -245,23 +274,23 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-900">총 재산가액</span>
-                <span className="text-gray-900">{formatCurrency(totalAssets)}원</span>
+                <span className="text-gray-900">{Math.round(totalAssets).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-900">총 채무</span>
-                <span className="text-red-600">-{formatCurrency(totalDebts)}원</span>
+                <span className="text-red-600">-{Math.round(totalDebts).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between border-t pt-2">
                 <span className="font-medium text-gray-900">순 재산가액</span>
-                <span className="font-medium text-gray-900">{formatCurrency(netAssets)}원</span>
+                <span className="font-medium text-gray-900">{Math.round(netAssets).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-900">공제액</span>
-                <span className="text-green-600">-{formatCurrency(totalDeductions)}원</span>
+                <span className="text-green-600">-{Math.round(totalDeductions).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between border-t pt-2">
                 <span className="font-medium text-gray-900">과세표준</span>
-                <span className="font-medium text-gray-900">{formatCurrency(taxableAmount)}원</span>
+                <span className="font-medium text-gray-900">{Math.round(taxableAmount).toLocaleString()}원</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-900">적용 세율</span>
@@ -269,7 +298,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
               </div>
               <div className="flex justify-between border-t pt-2">
                 <span className="font-medium text-gray-900">산출세액</span>
-                <span className="font-medium text-gray-900">{formatCurrency(calculatedTax)}원</span>
+                <span className="font-medium text-gray-900">{Math.round(calculatedTax).toLocaleString()}원</span>
               </div>
             </div>
           </div>
@@ -280,7 +309,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
               onClick={() => setShowBreakdown(!showBreakdown)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
-              {showBreakdown ? '간단히 보기' : '상세 보기'}
+              {showBreakdown ? '간단히' : '상세히'}
             </button>
             <button
               onClick={handleDownloadPDF}
@@ -297,7 +326,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span>PDF 다운로드</span>
+                  <span>PDF 다운</span>
                 </>
               )}
             </button>
@@ -307,12 +336,12 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
               <button
                 onClick={() => setShowShareMenu(!showShareMenu)}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center space-x-2"
-                title="공유하기"
+                title="공유"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                 </svg>
-                <span>공유하기</span>
+                <span>공유</span>
               </button>
               
               {/* 공유 메뉴 */}
@@ -328,6 +357,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
                       </svg>
                       <span>URL 복사</span>
                     </button>
+                    {/* 임시로 주석 처리
                     <button
                       onClick={() => handleShare('kakao')}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
@@ -337,6 +367,7 @@ export default function LiveCalculation({ formData }: LiveCalculationProps) {
                       </svg>
                       <span>카카오톡 공유</span>
                     </button>
+                    */}
                   </div>
                 </div>
               )}

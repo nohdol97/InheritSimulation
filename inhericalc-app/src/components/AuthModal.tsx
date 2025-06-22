@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn, signUp, signInWithGoogle, signInWithKakao } from '@/lib/supabase';
+import React, { useState } from 'react';
+import { signIn, signUp } from '@/lib/supabase';
+import AgreementSection from './AgreementSection';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -13,10 +14,50 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [region, setRegion] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [agreeMarketing, setAgreeMarketing] = useState(false);
+
+  const regions = [
+    '서울특별시', '부산광역시', '대구광역시', '인천광역시', '광주광역시', '대전광역시', '울산광역시', '세종특별자치시',
+    '경기도', '강원도', '충청북도', '충청남도', '전라북도', '전라남도', '경상북도', '경상남도', '제주특별자치도'
+  ];
+
+  const formatPhoneNumber = (value: string) => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+    
+    // 11자리 제한
+    if (numbers.length > 11) return phone;
+    
+    // 자동 하이픈 추가
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
+  // AgreementSection에서 사용할 동의 상태 핸들러
+  const handleAgreementChange = (value: { [key: string]: boolean }) => {
+    setAgreeTerms(value.terms || false);
+    setAgreePrivacy(value.privacy_required || false);
+    setAgreeMarketing(value.marketing || false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,10 +71,38 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         onAuthSuccess();
         onClose();
       } else {
-        await signUp(email, password);
+        // 회원가입 유효성 검사
+        if (password !== confirmPassword) {
+          throw new Error('비밀번호가 일치하지 않습니다.');
+        }
+        
+        const phoneNumbers = phone.replace(/[^\d]/g, '');
+        if (phoneNumbers.length !== 11 || !phoneNumbers.startsWith('010')) {
+          throw new Error('올바른 휴대폰 번호를 입력해주세요. (010으로 시작하는 11자리)');
+        }
+
+        if (!agreeTerms || !agreePrivacy) {
+          throw new Error('필수 약관에 동의해주세요.');
+        }
+
+        await signUp(email, password, {
+          name,
+          phone: phoneNumbers,
+          region,
+          agreeTerms,
+          agreePrivacy,
+          agreeMarketing
+        });
         setSuccessMessage('회원가입이 완료되었습니다. 이제 로그인해주세요.');
         setIsLogin(true); // 회원가입 후 로그인 창으로 전환
         setPassword(''); // 비밀번호 필드 초기화
+        setConfirmPassword('');
+        setName('');
+        setPhone('');
+        setRegion('');
+        setAgreeTerms(false);
+        setAgreePrivacy(false);
+        setAgreeMarketing(false);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '인증 중 오류가 발생했습니다.');
@@ -42,27 +111,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Google 로그인 중 오류가 발생했습니다.');
-    }
-  };
-
-  const handleKakaoSignIn = async () => {
-    try {
-      await signInWithKakao();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '카카오 로그인 중 오류가 발생했습니다.');
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
-      <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-100">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] transition-opacity duration-300">
+      <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto relative z-[61]">
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">
@@ -93,6 +146,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                이름
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="홍길동"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                required
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               이메일
@@ -106,6 +175,44 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               required
             />
           </div>
+
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                휴대폰 번호
+              </label>
+              <input
+                type="text"
+                value={phone}
+                onChange={handlePhoneChange}
+                placeholder="010-1234-5678"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">숫자만 입력하면 자동으로 하이픈이 추가됩니다.</p>
+            </div>
+          )}
+
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                지역
+              </label>
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                required
+              >
+                <option value="" className="text-gray-400">지역을 선택해주세요</option>
+                {regions.map((regionOption) => (
+                  <option key={regionOption} value={regionOption} className="text-gray-900">
+                    {regionOption}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -122,27 +229,37 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           </div>
 
           {!isLogin && (
-            <div className="pt-2">
-              <label className="flex items-start text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={agreePrivacy}
-                  onChange={(e) => setAgreePrivacy(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5"
-                />
-                <span className="ml-2 text-gray-600">
-                  <span className="font-medium text-gray-700">개인정보 수집 및 이용</span>에 동의합니다. (필수)
-                  <span className="block text-xs text-gray-400 mt-1">
-                    수집 항목: 이메일 주소, 목적: 회원 식별 및 서비스 이용 기록 저장.
-                  </span>
-                </span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                비밀번호 확인
               </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="비밀번호를 다시 입력하세요"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                required
+              />
+            </div>
+          )}
+
+          {!isLogin && (
+            <div className="pt-2">
+              <AgreementSection
+                value={{
+                  terms: agreeTerms,
+                  privacy_required: agreePrivacy,
+                  marketing: agreeMarketing
+                }}
+                onChange={handleAgreementChange}
+              />
             </div>
           )}
 
           <button
             type="submit"
-            disabled={loading || (!isLogin && !agreePrivacy)}
+            disabled={loading || (!isLogin && (!agreeTerms || !agreePrivacy))}
             className={`w-full text-white py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed
               ${isLogin 
                 ? 'bg-blue-600 hover:bg-blue-700' 
@@ -152,42 +269,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             {loading ? '처리 중...' : (isLogin ? '로그인' : '회원가입')}
           </button>
         </form>
-
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">또는</span>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 48 48">
-              <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
-              <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
-              <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
-              <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.048,36.145,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
-            </svg>
-            <span className="text-sm font-medium text-gray-700">Google 계정으로 계속하기</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleKakaoSignIn}
-            className="w-full flex items-center justify-center gap-3 py-3 border-transparent bg-[#FEE500] rounded-lg hover:opacity-90 transition-opacity"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" clipRule="evenodd" d="M16 4C9.37258 4 4 8.81722 4 14.6667C4 18.5253 6.02899 21.9407 9.03478 23.9919L7.38841 28.9884L11.8928 26.3982C13.1652 26.793 14.542 27 16 27C22.6274 27 28 22.1828 28 16.3333C28 10.4838 22.6274 5.66667 16 5.66667C16 5.25131 16 4.83594 16 4.42058V4.42058L16 4Z" fill="black"/>
-            </svg>
-            <span className="text-sm font-medium text-black">카카오 계정으로 계속하기</span>
-          </button>
-        </div>
 
         <div className="mt-6 text-center">
           <button

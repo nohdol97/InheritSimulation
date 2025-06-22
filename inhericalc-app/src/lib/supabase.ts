@@ -122,7 +122,14 @@ export async function signIn(email: string, password: string) {
 }
 
 // 회원가입
-export async function signUp(email: string, password: string) {
+export async function signUp(email: string, password: string, additionalData?: { 
+  name: string; 
+  phone: string; 
+  region: string; 
+  agreeTerms: boolean; 
+  agreePrivacy: boolean; 
+  agreeMarketing: boolean; 
+}) {
   if (!supabase) {
     throw new Error('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
   }
@@ -133,9 +140,69 @@ export async function signUp(email: string, password: string) {
       password
     });
     if (error) throw error;
+
+    // 회원가입 성공하고 사용자 정보가 있으면 프로필 저장
+    if (data.user && additionalData) {
+      try {
+        await saveUserProfile(data.user.id, {
+          email,
+          name: additionalData.name,
+          phone: additionalData.phone,
+          region: additionalData.region,
+          agreeTerms: additionalData.agreeTerms,
+          agreePrivacy: additionalData.agreePrivacy,
+          agreeMarketing: additionalData.agreeMarketing
+        });
+      } catch (profileError) {
+        console.error('프로필 저장 오류:', profileError);
+        // 프로필 저장 실패해도 회원가입은 성공으로 처리
+      }
+    }
+
     return data;
   } catch (error) {
     console.error('회원가입 오류:', error);
+    throw error;
+  }
+}
+
+// 사용자 프로필 저장
+export async function saveUserProfile(userId: string, profileData: { 
+  email: string; 
+  name: string; 
+  phone: string; 
+  region: string; 
+  agreeTerms: boolean; 
+  agreePrivacy: boolean; 
+  agreeMarketing: boolean; 
+}) {
+  if (!supabase) {
+    throw new Error('Supabase 클라이언트가 초기화되지 않았습니다. 환경변수를 확인해주세요.');
+  }
+  
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert([
+        {
+          user_id: userId,
+          email: profileData.email,
+          name: profileData.name,
+          phone: profileData.phone,
+          region: profileData.region,
+          agree_terms: profileData.agreeTerms,
+          agree_privacy: profileData.agreePrivacy,
+          agree_marketing: profileData.agreeMarketing,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ])
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('프로필 저장 오류:', error);
     throw error;
   }
 }
