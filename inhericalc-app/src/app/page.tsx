@@ -369,7 +369,7 @@ export default function Home() {
       {/* 메인 콘텐츠 */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!showFinalResult ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* 단계별 입력 폼 */}
             <div>
               <StepForm 
@@ -395,11 +395,6 @@ export default function Home() {
                 user={user}
                 onSaveCalculation={handleSaveCalculation}
               />
-            </div>
-
-            {/* 방문자 통계 */}
-            <div className="lg:col-span-1">
-              <VisitorStats />
             </div>
           </div>
         ) : (
@@ -527,6 +522,13 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* 방문자 통계 */}
+        {!showFinalResult && (
+          <div className="mt-8 max-w-md mx-auto">
+            <VisitorStats />
           </div>
         )}
       </main>
