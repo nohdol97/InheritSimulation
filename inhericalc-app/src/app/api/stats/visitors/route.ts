@@ -84,6 +84,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  console.log('=== 방문자 통계 조회 API 시작 ===');
+  
   try {
     const cookieStore = await cookies();
     
@@ -103,48 +105,82 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const daysBack = parseInt(searchParams.get('days') || '7');
 
+    console.log('조회 파라미터:', { daysBack });
+
     // 방문자 통계 조회 (실제 DB 함수 호출)
     const { data: stats, error } = await supabase.rpc('get_visitor_stats', {
       days_back: daysBack
     });
 
+    console.log('DB 함수 호출 결과:', { 
+      statsLength: stats?.length, 
+      error: error?.message,
+      firstStat: stats?.[0],
+      fullError: error,
+      rawStats: stats
+    });
+
     if (error) {
       console.error('방문자 통계 조회 오류:', error);
+      console.error('오류 상세:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       
-      // 오류 발생 시 임시 데이터 반환
+      // 오류 발생 시에도 기본 구조 반환
       const today = new Date().toISOString().split('T')[0];
+      const fallbackData = {
+        stats: [],
+        today: {
+          date: today,
+          dailyVisitors: 0,
+          totalVisitors: 0
+        }
+      };
+      
+      console.log('Fallback 데이터 반환:', fallbackData);
+      
       return NextResponse.json({
         success: true,
-        data: {
-          stats: [],
-          today: {
-            date: today,
-            dailyVisitors: 0,
-            totalVisitors: 0
-          }
-        }
+        data: fallbackData,
+        error: error.message
       });
     }
 
     // 오늘 방문자 수와 총 방문자 수 계산
     const today = new Date().toISOString().split('T')[0];
-    const todayStats = stats?.find((stat: { visit_date: string; daily_visitors: number; total_visitors: number }) => stat.visit_date === today);
+    console.log('오늘 날짜:', today);
     
-    const totalVisitors = todayStats?.total_visitors || 0;
+    // stats 배열에서 오늘 데이터 찾기
+    const todayStats = stats?.find((stat: { visit_date: string; daily_visitors: number; total_visitors: number }) => {
+      const statDate = new Date(stat.visit_date).toISOString().split('T')[0];
+      return statDate === today;
+    });
+    
+    console.log('오늘 통계 데이터:', todayStats);
+    
+    // 총 방문자 수는 가장 최근 데이터의 total_visitors 사용
+    const totalVisitors = stats && stats.length > 0 ? stats[0].total_visitors : 0;
     const dailyVisitors = todayStats?.daily_visitors || 0;
 
-    console.log('방문자 통계 조회 성공:', { todayStats, totalStats: stats?.length });
+    console.log('계산된 결과:', { totalVisitors, dailyVisitors });
+
+    const responseData = {
+      stats: stats || [],
+      today: {
+        date: today,
+        dailyVisitors,
+        totalVisitors
+      }
+    };
+
+    console.log('=== 방문자 통계 조회 성공 ===', responseData);
 
     return NextResponse.json({
       success: true,
-      data: {
-        stats: stats || [],
-        today: {
-          date: today,
-          dailyVisitors,
-          totalVisitors
-        }
-      }
+      data: responseData
     });
 
   } catch (error) {
@@ -152,16 +188,19 @@ export async function GET(request: NextRequest) {
     
     // 오류 발생 시에도 임시 데이터 반환
     const today = new Date().toISOString().split('T')[0];
+    const errorData = {
+      stats: [],
+      today: {
+        date: today,
+        dailyVisitors: 0,
+        totalVisitors: 0
+      }
+    };
+    
     return NextResponse.json({
       success: true,
-      data: {
-        stats: [],
-        today: {
-          date: today,
-          dailyVisitors: 0,
-          totalVisitors: 0
-        }
-      }
+      data: errorData,
+      error: error instanceof Error ? error.message : '알 수 없는 오류'
     });
   }
 } 

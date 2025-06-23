@@ -22,12 +22,23 @@ export default function VisitorStats() {
   useEffect(() => {
     // 페이지 로드 시 방문자 통계 업데이트
     const updateVisitorStats = async () => {
+      console.log('=== 방문자 통계 업데이트 시작 ===');
       try {
-        await fetch('/api/stats/visitors', {
+        const response = await fetch('/api/stats/visitors', {
           method: 'POST',
           credentials: 'include'
         });
-        console.log('방문자 통계 업데이트 완료');
+        
+        const result = await response.json();
+        console.log('방문자 통계 업데이트 결과:', { 
+          status: response.status, 
+          success: result.success,
+          data: result.data 
+        });
+        
+        if (!response.ok) {
+          console.warn('방문자 통계 업데이트 실패:', response.status);
+        }
       } catch (error) {
         console.error('방문자 통계 업데이트 실패:', error);
       }
@@ -35,20 +46,28 @@ export default function VisitorStats() {
 
     // 방문자 통계 조회
     const fetchVisitorStats = async () => {
+      console.log('=== 방문자 통계 조회 시작 ===');
       try {
         const response = await fetch('/api/stats/visitors?days=7');
         
+        console.log('API 응답 상태:', response.status, response.statusText);
+        
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const result = await response.json();
+        console.log('API 응답 데이터:', result);
         
-        if (result.success) {
+        if (result.success && result.data) {
+          console.log('통계 데이터 설정:', {
+            statsLength: result.data.stats?.length,
+            todayData: result.data.today
+          });
           setStats(result.data);
-          console.log('방문자 통계 조회 성공:', result.data);
         } else {
-          // API 오류 시 임시 데이터 사용
+          console.warn('API 응답이 예상과 다름:', result);
+          // API 응답이 성공이지만 데이터가 없는 경우 임시 데이터 사용
           const tempData = {
             stats: [],
             today: {
@@ -57,6 +76,7 @@ export default function VisitorStats() {
               totalVisitors: 0
             }
           };
+          console.log('임시 데이터 사용:', tempData);
           setStats(tempData);
         }
       } catch (error) {
@@ -70,6 +90,7 @@ export default function VisitorStats() {
             totalVisitors: 0
           }
         };
+        console.log('오류로 인한 임시 데이터 사용:', tempData);
         setStats(tempData);
       } finally {
         setLoading(false);
@@ -79,6 +100,7 @@ export default function VisitorStats() {
     // 방문자 통계 업데이트 후 조회
     updateVisitorStats().then(() => {
       // 업데이트 후 약간의 지연을 두고 조회 (DB 반영 시간 고려)
+      console.log('업데이트 완료, 500ms 후 조회 시작');
       setTimeout(fetchVisitorStats, 500);
     });
   }, []);

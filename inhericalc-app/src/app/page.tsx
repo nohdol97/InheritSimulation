@@ -5,12 +5,12 @@ import StepForm from '@/components/StepForm';
 import LiveCalculation from '@/components/LiveCalculation';
 import ResultSummary from '@/components/ResultSummary';
 import AuthModal from '@/components/AuthModal';
-import VisitorStats from '@/components/VisitorStats';
 // import KakaoShareButton from '@/components/KakaoShareButton';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { getCurrentUser, saveCalculationRecord, signOut } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import Link from 'next/link';
+import VisitorStats from '@/components/VisitorStats';
 
 export default function Home() {
   const [formData, setFormData] = useState<InheritanceData>({
