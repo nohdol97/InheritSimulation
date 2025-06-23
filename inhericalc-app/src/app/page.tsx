@@ -436,6 +436,7 @@ export default function Home() {
                 formData={formData} 
                 user={user}
                 onSaveCalculation={handleSaveCalculation}
+                onShowAuthModal={() => setShowAuthModal(true)}
               />
             </div>
           </div>
@@ -620,6 +621,7 @@ export default function Home() {
               isMobileBottomBar={true} 
               user={user}
               onSaveCalculation={handleSaveCalculation}
+              onShowAuthModal={() => setShowAuthModal(true)}
             />
           </div>
         </div>

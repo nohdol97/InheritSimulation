@@ -1,31 +1,36 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { calculateInheritanceTax, formatCurrency } from '@/lib/calculator';
 import { saveCalculationRecord } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import CalculationBreakdown from './CalculationBreakdown';
 import TaxReport from './TaxReport';
+import LoginRequiredModal from './LoginRequiredModal';
 
 interface LiveCalculationProps {
   formData: InheritanceData;
   isMobileBottomBar?: boolean;
   user?: User | null;
   onSaveCalculation?: () => void;
+  onShowAuthModal?: () => void;
 }
 
 export default function LiveCalculation({ 
   formData, 
   isMobileBottomBar = false, 
   user,
-  onSaveCalculation 
+  onSaveCalculation,
+  onShowAuthModal 
 }: LiveCalculationProps) {
   const [result, setResult] = useState<TaxCalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'pdf' | null>(null);
 
   useEffect(() => {
     const calculateTax = async () => {
@@ -92,8 +97,21 @@ export default function LiveCalculation({
     }
   };
 
-  // PDF 다운로드 핸들러 수정
-  const handleDownloadPDF = async () => {
+  // PDF 다운로드 권한 확인 및 처리
+  const handleDownloadPDFRequest = () => {
+    if (!user) {
+      // 비로그인 사용자인 경우 로그인 모달 표시
+      setPendingAction('pdf');
+      setShowLoginModal(true);
+      return;
+    }
+    
+    // 로그인된 사용자인 경우 바로 PDF 다운로드
+    handleDownloadPDF();
+  };
+
+  // PDF 다운로드 핸들러 수정 - useCallback으로 최적화
+  const handleDownloadPDF = useCallback(async () => {
     if (!result) return;
 
     setIsGeneratingPDF(true);
@@ -114,34 +132,44 @@ export default function LiveCalculation({
         throw new Error('PDF 생성용 요소를 찾을 수 없습니다.');
       }
 
-      // HTML을 Canvas로 변환
+      // HTML을 Canvas로 변환 - 용량 최적화
       const canvas = await html2canvas(hiddenTaxReport as HTMLElement, {
-        scale: 1.5,
+        scale: 1.2, // 1.5에서 1.2로 축소하여 용량 줄이기
         useCORS: true,
         allowTaint: false,
         backgroundColor: '#ffffff',
         logging: false,
         width: 800,
-        height: 1200
+        height: 1200,
+        imageTimeout: 15000,
+        removeContainer: true
       });
 
-      // PDF 생성
-      const imgData = canvas.toDataURL('image/png');
+      // PDF 생성 - 용량 최적화 및 페이지 분할 개선
+      const imgData = canvas.toDataURL('image/jpeg', 0.85); // PNG에서 JPEG로 변경, 품질 85%로 설정
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 295;
+      
+      const pdfWidth = 210; // A4 너비 (mm)
+      const pdfHeight = 297; // A4 높이 (mm)
+      const imgWidth = pdfWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
       let heightLeft = imgHeight;
-
       let position = 0;
+      const pageHeight = pdfHeight - 20; // 상하 여백 10mm씩
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      // 첫 번째 페이지
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      while (heightLeft >= 0) {
+      // 추가 페이지들 - 페이지 분할 개선
+      while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        
+        // 페이지 경계에서 잘리지 않도록 약간의 오버랩 추가
+        const overlap = 5; // 5mm 오버랩
+        pdf.addImage(imgData, 'JPEG', 0, position + overlap, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
 
@@ -155,7 +183,7 @@ export default function LiveCalculation({
     } finally {
       setIsGeneratingPDF(false);
     }
-  };
+  }, [result, user, formData.deceasedName, handleSaveCalculation]);
 
   // 공유 핸들러 수정
   const handleShare = async (type: 'url' | 'kakao') => {
@@ -210,6 +238,29 @@ export default function LiveCalculation({
 
     setShowShareMenu(false);
   };
+
+  // 로그인 모달 핸들러
+  const handleCloseLoginModal = () => {
+    setShowLoginModal(false);
+    setPendingAction(null);
+  };
+
+  const handleShowAuthModalFromLogin = () => {
+    setShowLoginModal(false);
+    if (onShowAuthModal) {
+      onShowAuthModal();
+    }
+  };
+
+  // 로그인 성공 후 대기 중인 액션 실행
+  useEffect(() => {
+    if (user && pendingAction === 'pdf') {
+      setPendingAction(null);
+      setTimeout(() => {
+        handleDownloadPDF();
+      }, 500); // 로그인 완료 후 약간의 지연
+    }
+  }, [user, pendingAction, handleDownloadPDF]);
 
   if (!result) {
     if (isMobileBottomBar) {
@@ -353,8 +404,10 @@ export default function LiveCalculation({
             >
               {showBreakdown ? '간단히' : '상세히'}
             </button>
+            
+            {/* PDF 다운로드 버튼 - 권한 제어 적용 */}
             <button
-              onClick={handleDownloadPDF}
+              onClick={handleDownloadPDFRequest}
               disabled={isGeneratingPDF}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 whitespace-nowrap"
             >
@@ -434,6 +487,14 @@ export default function LiveCalculation({
       <div id="hidden-tax-report" style={{ position: 'absolute', left: '-9999px', top: '0', width: '800px' }}>
         <TaxReport formData={formData} calculationResult={result} />
       </div>
+
+      {/* 로그인 필요 모달 */}
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={handleCloseLoginModal}
+        onShowAuthModal={handleShowAuthModalFromLogin}
+        feature="PDF 다운로드"
+      />
     </div>
   );
 } 
