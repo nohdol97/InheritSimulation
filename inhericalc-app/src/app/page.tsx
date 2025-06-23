@@ -5,12 +5,22 @@ import StepForm from '@/components/StepForm';
 import LiveCalculation from '@/components/LiveCalculation';
 import ResultSummary from '@/components/ResultSummary';
 import AuthModal from '@/components/AuthModal';
+import WelcomeSignupModal from '@/components/WelcomeSignupModal';
 // import KakaoShareButton from '@/components/KakaoShareButton';
 import { InheritanceData, TaxCalculationResult } from '@/types';
 import { getCurrentUser, saveCalculationRecord, signOut } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import Link from 'next/link';
 import VisitorStats from '@/components/VisitorStats';
+import { 
+  canShowWelcomePopup, 
+  hideWelcomePopupToday, 
+  markFirstVisitDone, 
+  POPUP_DELAY,
+  POPUP_PRIORITY,
+  startShowingPopup,
+  stopShowingPopup 
+} from '@/utils/popupManager';
 
 export default function Home() {
   const [formData, setFormData] = useState<InheritanceData>({
@@ -103,6 +113,7 @@ export default function Home() {
   const [showFinalResult, setShowFinalResult] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showMobileBottomBar, setShowMobileBottomBar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -145,6 +156,22 @@ export default function Home() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [lastScrollY]);
+
+  // 웰컴 팝업 표시 로직
+  useEffect(() => {
+    // 사용자 상태가 확정된 후에 팝업 표시 여부 결정
+    if (user === null) { // 비로그인 상태가 확정되었을 때만
+      const timer = setTimeout(() => {
+        if (canShowWelcomePopup(user)) {
+          startShowingPopup(POPUP_PRIORITY.WELCOME_SIGNUP);
+          setShowWelcomeModal(true);
+          markFirstVisitDone(); // 첫 방문 완료로 표시
+        }
+      }, POPUP_DELAY.WELCOME);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   const handleFormDataChange = (newFormData: InheritanceData) => {
     setFormData(newFormData);
@@ -313,6 +340,21 @@ export default function Home() {
   const handleSaveCalculation = () => {
     // 저장 완료 시 필요한 작업 (예: 토스트 메시지 등)
     console.log('계산 기록이 저장되었습니다.');
+  };
+
+  // 웰컴 팝업 핸들러 함수들
+  const handleCloseWelcomeModal = () => {
+    setShowWelcomeModal(false);
+    stopShowingPopup();
+  };
+
+  const handleShowAuthModalFromWelcome = () => {
+    setShowAuthModal(true);
+  };
+
+  const handleHideWelcomeToday = () => {
+    hideWelcomePopupToday();
+    handleCloseWelcomeModal();
   };
 
   return (
@@ -549,6 +591,14 @@ export default function Home() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* 웰컴 회원가입 유도 팝업 */}
+      <WelcomeSignupModal
+        isOpen={showWelcomeModal}
+        onClose={handleCloseWelcomeModal}
+        onShowAuthModal={handleShowAuthModalFromWelcome}
+        onHideToday={handleHideWelcomeToday}
       />
 
       {/* 모바일 하단 고정 바 */}
