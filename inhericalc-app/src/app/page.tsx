@@ -24,9 +24,14 @@ import {
 
 export default function Home() {
   const [formData, setFormData] = useState<InheritanceData>({
-    deathDate: new Date().toISOString().split('T')[0],
-    deceasedName: '피상속인',
-    heirsCount: 1,
+    deathDate: '',
+    deceasedName: '',
+    heirsCount: 0,
+    hasSpouse: false,
+    childrenCount: 0,
+    minorChildrenCount: 0,
+    elderlyCount: 0,
+    disabledCount: 0,
     assets: {
       realEstate: {
         residential: 0,
@@ -40,7 +45,9 @@ export default function Home() {
         bonds: 0,
         funds: 0,
         stocks: 0,
-        crypto: 0
+        crypto: 0,
+        insuranceProceeds: 0,
+        severancePay: 0
       },
       insurance: {
         life: 0,
@@ -66,9 +73,18 @@ export default function Home() {
         membership: 0,
         deposits_guarantee: 0,
         loans_receivable: 0,
-        gifts_real_estate: 0,
-        gifts_other: 0,
         other: 0
+      },
+      nonTaxableAssets: {
+        stateDonation: 0,
+        culturalProperty: 0,
+        religiousProperty: 0,
+        publicInterestDonation: 0,
+        otherNonTaxable: 0
+      },
+      giftsAdded: {
+        realEstate: [],
+        other: []
       }
     },
     debts: {
@@ -96,6 +112,7 @@ export default function Home() {
         guarantee: 0,
         trade_payable: 0,
         lease: 0,
+        publicUtilities: 0,
         other: 0
       }
     },
@@ -103,7 +120,23 @@ export default function Home() {
       spouse: false,
       disabled: false,
       minor: false,
-      basic: true
+      basic: false,
+      elderly: false,
+      financialAsset: false,
+      businessSuccession: false,
+      farmingSuccession: false,
+      cohabitingHouse: false,
+      disasterLoss: false,
+      disasterLossAmount: 0
+    },
+    taxCredits: {
+      generationSkipSurcharge: false,
+      generationSkipSurchargeAmount: 0,
+      giftTaxCredit: false,
+      foreignTaxCredit: false,
+      foreignTaxCreditAmount: 0,
+      shortTermReinheritanceCredit: false,
+      shortTermReinheritanceCreditAmount: 0
     }
   });
   
@@ -219,9 +252,14 @@ export default function Home() {
     setError(null);
     setShowFinalResult(false);
     setFormData({
-      deathDate: new Date().toISOString().split('T')[0],
-      deceasedName: '피상속인',
-      heirsCount: 1,
+      deathDate: '',
+      deceasedName: '',
+      heirsCount: 0,
+      hasSpouse: false,
+      childrenCount: 0,
+      minorChildrenCount: 0,
+      elderlyCount: 0,
+      disabledCount: 0,
       assets: {
         realEstate: {
           residential: 0,
@@ -235,7 +273,9 @@ export default function Home() {
           bonds: 0,
           funds: 0,
           stocks: 0,
-          crypto: 0
+          crypto: 0,
+          insuranceProceeds: 0,
+          severancePay: 0
         },
         insurance: {
           life: 0,
@@ -261,9 +301,18 @@ export default function Home() {
           membership: 0,
           deposits_guarantee: 0,
           loans_receivable: 0,
-          gifts_real_estate: 0,
-          gifts_other: 0,
           other: 0
+        },
+        nonTaxableAssets: {
+          stateDonation: 0,
+          culturalProperty: 0,
+          religiousProperty: 0,
+          publicInterestDonation: 0,
+          otherNonTaxable: 0
+        },
+        giftsAdded: {
+          realEstate: [],
+          other: []
         }
       },
       debts: {
@@ -291,6 +340,7 @@ export default function Home() {
           guarantee: 0,
           trade_payable: 0,
           lease: 0,
+          publicUtilities: 0,
           other: 0
         }
       },
@@ -298,7 +348,23 @@ export default function Home() {
         spouse: false,
         disabled: false,
         minor: false,
-        basic: true
+        basic: false,
+        elderly: false,
+        financialAsset: false,
+        businessSuccession: false,
+        farmingSuccession: false,
+        cohabitingHouse: false,
+        disasterLoss: false,
+        disasterLossAmount: 0
+      },
+      taxCredits: {
+        generationSkipSurcharge: false,
+        generationSkipSurchargeAmount: 0,
+        giftTaxCredit: false,
+        foreignTaxCredit: false,
+        foreignTaxCreditAmount: 0,
+        shortTermReinheritanceCredit: false,
+        shortTermReinheritanceCreditAmount: 0
       }
     });
   };

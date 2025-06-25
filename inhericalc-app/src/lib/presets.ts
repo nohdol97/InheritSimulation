@@ -8,6 +8,11 @@ export const presetExamples: PresetExample[] = [
       deathDate: "2024-06-21",
       deceasedName: "김철수",
       heirsCount: 2,
+      hasSpouse: true,
+      childrenCount: 1,
+      minorChildrenCount: 0,
+      elderlyCount: 0,
+      disabledCount: 0,
       assets: {
         realEstate: {
           residential: 450000000,
@@ -21,7 +26,9 @@ export const presetExamples: PresetExample[] = [
           bonds: 0,
           funds: 0,
           stocks: 0,
-          crypto: 0
+          crypto: 0,
+          insuranceProceeds: 0,
+          severancePay: 0
         },
         insurance: {
           life: 0,
@@ -47,9 +54,18 @@ export const presetExamples: PresetExample[] = [
           membership: 0,
           deposits_guarantee: 0,
           loans_receivable: 0,
-          gifts_real_estate: 0,
-          gifts_other: 0,
           other: 0
+        },
+        nonTaxableAssets: {
+          stateDonation: 0,
+          culturalProperty: 0,
+          religiousProperty: 0,
+          publicInterestDonation: 0,
+          otherNonTaxable: 0
+        },
+        giftsAdded: {
+          realEstate: [],
+          other: []
         }
       },
       debts: {
@@ -77,6 +93,7 @@ export const presetExamples: PresetExample[] = [
           guarantee: 0,
           trade_payable: 0,
           lease: 0,
+          publicUtilities: 0,
           other: 0
         }
       },
@@ -84,7 +101,23 @@ export const presetExamples: PresetExample[] = [
         spouse: true,
         disabled: false,
         minor: false,
-        basic: true
+        basic: true,
+        elderly: false,
+        financialAsset: false,
+        businessSuccession: false,
+        farmingSuccession: false,
+        cohabitingHouse: false,
+        disasterLoss: false,
+        disasterLossAmount: 0
+      },
+      taxCredits: {
+        generationSkipSurcharge: false,
+        generationSkipSurchargeAmount: 0,
+        giftTaxCredit: false,
+        foreignTaxCredit: false,
+        foreignTaxCreditAmount: 0,
+        shortTermReinheritanceCredit: false,
+        shortTermReinheritanceCreditAmount: 0
       }
     }
   },
@@ -95,6 +128,11 @@ export const presetExamples: PresetExample[] = [
       deathDate: "2024-06-21",
       deceasedName: "박영희",
       heirsCount: 3,
+      hasSpouse: true,
+      childrenCount: 2,
+      minorChildrenCount: 1,
+      elderlyCount: 0,
+      disabledCount: 0,
       assets: {
         realEstate: {
           residential: 2000000000,
@@ -108,7 +146,9 @@ export const presetExamples: PresetExample[] = [
           bonds: 0,
           funds: 0,
           stocks: 0,
-          crypto: 0
+          crypto: 0,
+          insuranceProceeds: 0,
+          severancePay: 0
         },
         insurance: {
           life: 0,
@@ -134,9 +174,18 @@ export const presetExamples: PresetExample[] = [
           membership: 0,
           deposits_guarantee: 0,
           loans_receivable: 0,
-          gifts_real_estate: 0,
-          gifts_other: 0,
           other: 0
+        },
+        nonTaxableAssets: {
+          stateDonation: 0,
+          culturalProperty: 0,
+          religiousProperty: 0,
+          publicInterestDonation: 0,
+          otherNonTaxable: 0
+        },
+        giftsAdded: {
+          realEstate: [],
+          other: []
         }
       },
       debts: {
@@ -164,6 +213,7 @@ export const presetExamples: PresetExample[] = [
           guarantee: 0,
           trade_payable: 0,
           lease: 0,
+          publicUtilities: 0,
           other: 0
         }
       },
@@ -171,7 +221,23 @@ export const presetExamples: PresetExample[] = [
         spouse: true,
         disabled: false,
         minor: true,
-        basic: true
+        basic: true,
+        elderly: false,
+        financialAsset: false,
+        businessSuccession: false,
+        farmingSuccession: false,
+        cohabitingHouse: false,
+        disasterLoss: false,
+        disasterLossAmount: 0
+      },
+      taxCredits: {
+        generationSkipSurcharge: false,
+        generationSkipSurchargeAmount: 0,
+        giftTaxCredit: false,
+        foreignTaxCredit: false,
+        foreignTaxCreditAmount: 0,
+        shortTermReinheritanceCredit: false,
+        shortTermReinheritanceCreditAmount: 0
       }
     }
   },
@@ -182,6 +248,11 @@ export const presetExamples: PresetExample[] = [
       deathDate: "2024-06-21",
       deceasedName: "이민수",
       heirsCount: 1,
+      hasSpouse: false,
+      childrenCount: 0,
+      minorChildrenCount: 0,
+      elderlyCount: 0,
+      disabledCount: 0,
       assets: {
         realEstate: {
           residential: 150000000,
@@ -195,7 +266,9 @@ export const presetExamples: PresetExample[] = [
           bonds: 0,
           funds: 0,
           stocks: 0,
-          crypto: 0
+          crypto: 0,
+          insuranceProceeds: 0,
+          severancePay: 0
         },
         insurance: {
           life: 0,
@@ -221,9 +294,18 @@ export const presetExamples: PresetExample[] = [
           membership: 0,
           deposits_guarantee: 0,
           loans_receivable: 0,
-          gifts_real_estate: 0,
-          gifts_other: 0,
           other: 0
+        },
+        nonTaxableAssets: {
+          stateDonation: 0,
+          culturalProperty: 0,
+          religiousProperty: 0,
+          publicInterestDonation: 0,
+          otherNonTaxable: 0
+        },
+        giftsAdded: {
+          realEstate: [],
+          other: []
         }
       },
       debts: {
@@ -251,6 +333,7 @@ export const presetExamples: PresetExample[] = [
           guarantee: 0,
           trade_payable: 0,
           lease: 0,
+          publicUtilities: 0,
           other: 0
         }
       },
@@ -258,7 +341,23 @@ export const presetExamples: PresetExample[] = [
         spouse: false,
         disabled: false,
         minor: false,
-        basic: true
+        basic: true,
+        elderly: false,
+        financialAsset: false,
+        businessSuccession: false,
+        farmingSuccession: false,
+        cohabitingHouse: false,
+        disasterLoss: false,
+        disasterLossAmount: 0
+      },
+      taxCredits: {
+        generationSkipSurcharge: false,
+        generationSkipSurchargeAmount: 0,
+        giftTaxCredit: false,
+        foreignTaxCredit: false,
+        foreignTaxCreditAmount: 0,
+        shortTermReinheritanceCredit: false,
+        shortTermReinheritanceCreditAmount: 0
       }
     }
   }

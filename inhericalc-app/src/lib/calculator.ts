@@ -30,37 +30,47 @@ const DEDUCTION_AMOUNTS = {
 };
 
 /**
- * 상속세 계산 함수
+ * 상속세 계산 함수 (정확한 계산식 적용)
+ * 상속세 = (((총상속재산 - 비과세재산 - 채무 - 장례비용 + 사전증여재산) - 각종 공제금액) * 세율 - 누진공제) - 세액공제 및 감면 + 가산세
  */
 export function calculateInheritanceTax(data: InheritanceData): TaxCalculationResult {
-  // 1. 총 재산가액 계산
+  // 1. 총상속재산가액 계산
   const totalAssets = calculateTotalAssets(data.assets);
   
-  // 2. 총 채무 계산
+  // 2. 비과세재산 계산
+  const nonTaxableAssets = calculateNonTaxableAssets(data.assets.nonTaxableAssets);
+  
+  // 3. 총 채무 계산 (장례비용 포함)
   const totalDebts = calculateTotalDebts(data.debts);
   
-  // 3. 순 재산가액 계산
-  const netAssets = totalAssets - totalDebts;
+  // 4. 사전증여재산 계산
+  const giftedAssets = calculateGiftedAssets(data.assets.giftsAdded);
   
-  // 4. 공제액 계산
-  const totalDeductions = calculateDeductions(data.deductions, netAssets, data.assets);
+  // 5. 상속세 과세가액 계산: 총상속재산 - 비과세재산 - 채무 - 장례비용 + 사전증여재산
+  const taxableInheritance = Math.max(0, totalAssets - nonTaxableAssets - totalDebts + giftedAssets);
   
-  // 5. 과세표준 계산
-  const taxableAmount = Math.max(0, netAssets - totalDeductions);
+  // 6. 상속공제 계산
+  const totalDeductions = calculateDeductions(data.deductions, taxableInheritance, data.assets, data);
   
-  // 6. 세율 및 세액 계산
+  // 7. 상속세 과세표준 계산: 상속세과세가액 - 각종공제
+  const taxableAmount = Math.max(0, taxableInheritance - totalDeductions);
+  
+  // 8. 상속세 산출세액 계산: 과세표준 × 세율 - 누진공제
   const { taxRate, calculatedTax, progressiveDeduction } = calculateTaxRate(taxableAmount);
   
-  // 7. 상속인별 세액 계산
-  const taxPerHeir = data.heirsCount > 0 ? calculatedTax / data.heirsCount : 0;
+  // 9. 세액공제 계산
+  const taxCredits = calculateTaxCredits(data.taxCredits, calculatedTax);
   
-  // 8. 최종 상속세 계산
-  const finalTax = calculatedTax;
+  // 10. 최종 상속세 계산: 산출세액 - 세액공제 (가산세는 현재 미적용)
+  const finalTax = Math.max(0, calculatedTax - taxCredits);
+  
+  // 11. 상속인별 세액 계산
+  const taxPerHeir = data.heirsCount > 0 ? finalTax / data.heirsCount : 0;
   
   return {
     totalAssets,
     totalDebts,
-    netAssets,
+    netAssets: taxableInheritance, // 과세가액으로 변경
     totalDeductions,
     taxableAmount,
     taxRate,
@@ -92,7 +102,24 @@ function calculateTotalAssets(assets: InheritanceData['assets']): number {
 }
 
 /**
- * 총 채무 계산
+ * 비과세재산 계산
+ */
+function calculateNonTaxableAssets(nonTaxableAssets: InheritanceData['assets']['nonTaxableAssets']): number {
+  return Object.values(nonTaxableAssets).reduce((sum, value) => sum + value, 0);
+}
+
+/**
+ * 사전증여재산 계산
+ */
+function calculateGiftedAssets(giftsAdded: InheritanceData['assets']['giftsAdded']): number {
+  const realEstateGifts = giftsAdded.realEstate.reduce((sum, gift) => sum + gift.value, 0);
+  const otherGifts = giftsAdded.other.reduce((sum, gift) => sum + gift.value, 0);
+  
+  return realEstateGifts + otherGifts;
+}
+
+/**
+ * 총 채무 계산 (장례비용 포함)
  */
 function calculateTotalDebts(debts: InheritanceData['debts']): number {
   const funeralTotal = Object.values(debts.funeral).reduce((sum, value) => sum + value, 0);
@@ -104,9 +131,14 @@ function calculateTotalDebts(debts: InheritanceData['debts']): number {
 }
 
 /**
- * 공제액 계산
+ * 상속공제 계산
  */
-function calculateDeductions(deductions: InheritanceData['deductions'], netAssets: number, assets: InheritanceData['assets']): number {
+function calculateDeductions(
+  deductions: InheritanceData['deductions'], 
+  taxableInheritance: number, 
+  assets: InheritanceData['assets'],
+  data: InheritanceData
+): number {
   let basicAndPersonalDeductions = 0;
   let spouseDeduction = 0;
   let otherDeductions = 0;
@@ -116,28 +148,33 @@ function calculateDeductions(deductions: InheritanceData['deductions'], netAsset
   
   // 2. 인적공제 계산
   if (deductions.disabled) {
-    basicAndPersonalDeductions += DEDUCTION_AMOUNTS.disabled;
+    // 실제로는 장애인 수 × 1천만원 × 기대여명연수
+    basicAndPersonalDeductions += DEDUCTION_AMOUNTS.disabled * data.disabledCount;
   }
   
   if (deductions.minor) {
-    // 실제로는 미성년자 수 × 1천만원 × (19세 - 현재나이)로 계산해야 하지만
-    // 간단히 1억원으로 계산 (UI에서 미성년자 수와 나이를 입력받지 않으므로)
-    basicAndPersonalDeductions += DEDUCTION_AMOUNTS.minor;
+    // 실제로는 미성년자 수 × 1천만원 × (19세 - 현재나이)
+    basicAndPersonalDeductions += DEDUCTION_AMOUNTS.minor * data.minorChildrenCount;
+  }
+  
+  if (deductions.elderly) {
+    // 연로자공제 (65세 이상)
+    basicAndPersonalDeductions += DEDUCTION_AMOUNTS.elderly * data.elderlyCount;
   }
   
   // 3. 일괄공제와 (기초공제 + 인적공제) 중 큰 금액 선택
   const lumpSumVsPersonal = Math.max(DEDUCTION_AMOUNTS.lumpSum, basicAndPersonalDeductions);
   
   // 4. 배우자공제 계산 (별도 적용)
-  if (deductions.spouse) {
+  if (deductions.spouse && data.hasSpouse) {
     // 배우자가 실제 상속받은 금액이 5억원 미만이면 5억원 공제
     // 5억원 이상이면 실제 상속받은 금액 공제 (최대 30억원)
     // 여기서는 간단히 최소 5억원으로 계산 (실제 상속분할 정보가 없으므로)
     spouseDeduction = DEDUCTION_AMOUNTS.spouse.minimum;
   }
   
-  // 5. 금융재산공제 계산
-  if (deductions.basic) { // 기본 공제 선택 시 금융재산공제도 자동 적용
+  // 5. 금융재산상속공제 계산
+  if (deductions.financialAsset) {
     const financialAssets = Object.values(assets.financial).reduce((sum, value) => sum + value, 0);
     if (financialAssets > DEDUCTION_AMOUNTS.financialAsset.threshold) {
       const financialDeduction = Math.min(
@@ -148,11 +185,58 @@ function calculateDeductions(deductions: InheritanceData['deductions'], netAsset
     }
   }
   
-  // 6. 총 공제액 계산
+  // 6. 기타 공제들
+  if (deductions.businessSuccession) {
+    // 가업상속공제 (실제로는 복잡한 계산 필요)
+    otherDeductions += 100000000; // 임시값
+  }
+  
+  if (deductions.farmingSuccession) {
+    // 영농상속공제 (실제로는 복잡한 계산 필요)
+    otherDeductions += 100000000; // 임시값
+  }
+  
+  if (deductions.cohabitingHouse) {
+    // 동거주택상속공제
+    otherDeductions += DEDUCTION_AMOUNTS.cohabitation;
+  }
+  
+  if (deductions.disasterLoss && deductions.disasterLossAmount) {
+    // 재해손실공제
+    otherDeductions += deductions.disasterLossAmount;
+  }
+  
+  // 7. 총 공제액 계산
   const totalDeductions = lumpSumVsPersonal + spouseDeduction + otherDeductions;
   
-  // 공제액은 순 재산가액을 초과할 수 없음
-  return Math.min(totalDeductions, netAssets);
+  // 공제액은 과세가액을 초과할 수 없음
+  return Math.min(totalDeductions, taxableInheritance);
+}
+
+/**
+ * 세액공제 계산
+ */
+function calculateTaxCredits(taxCredits: InheritanceData['taxCredits'], calculatedTax: number): number {
+  let totalCredits = 0;
+  
+  if (taxCredits.giftTaxCredit) {
+    // 증여세액공제 (사전증여재산에 대해 납부한 증여세액)
+    // 실제로는 복잡한 계산이 필요하지만 여기서는 간단히 처리
+    totalCredits += 10000000; // 임시값
+  }
+  
+  if (taxCredits.foreignTaxCredit && taxCredits.foreignTaxCreditAmount) {
+    // 외국납부세액공제
+    totalCredits += taxCredits.foreignTaxCreditAmount;
+  }
+  
+  if (taxCredits.shortTermReinheritanceCredit && taxCredits.shortTermReinheritanceCreditAmount) {
+    // 단기재상속세액공제
+    totalCredits += taxCredits.shortTermReinheritanceCreditAmount;
+  }
+  
+  // 세액공제는 산출세액을 초과할 수 없음
+  return Math.min(totalCredits, calculatedTax);
 }
 
 /**

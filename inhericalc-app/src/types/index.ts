@@ -1,10 +1,25 @@
 // 상속세 계산 관련 타입 정의
 
+// 증여재산 인터페이스
+export interface GiftProperty {
+  value: number;
+  giftTaxPaid: number;
+  giftDate: string;
+  isHeir: boolean;
+}
+
 export interface InheritanceData {
   // 기본 정보
   deathDate: string;
   deceasedName: string;
   heirsCount: number;
+  
+  // 추가된 상속인 정보
+  hasSpouse: boolean;
+  childrenCount: number;
+  minorChildrenCount: number;
+  elderlyCount: number;
+  disabledCount: number;
   
   // 재산 정보 - 더 디테일하게 확장
   assets: {
@@ -16,7 +31,7 @@ export interface InheritanceData {
       other: number;         // 기타 부동산
     };
     
-    // 금융자산
+    // 금융자산 (확장)
     financial: {
       deposits: number;       // 예금
       savings: number;        // 적금
@@ -24,6 +39,8 @@ export interface InheritanceData {
       funds: number;          // 펀드
       stocks: number;         // 주식
       crypto: number;         // 암호화폐
+      insuranceProceeds: number; // 보험금
+      severancePay: number;   // 퇴직금
     };
     
     // 보험 및 연금
@@ -57,9 +74,22 @@ export interface InheritanceData {
       membership: number;     // 회원권
       deposits_guarantee: number; // 보증금
       loans_receivable: number;   // 대여금
-      gifts_real_estate: number;  // 10년 이내 증여받은 부동산
-      gifts_other: number;        // 10년 이내 증여받은 기타재산
       other: number;         // 기타
+    };
+    
+    // 비과세 및 과세가액 불산입 재산
+    nonTaxableAssets: {
+      stateDonation: number;        // 국가/지자체 기증 재산
+      culturalProperty: number;     // 문화재 및 국가지정문화재
+      religiousProperty: number;    // 제사 주재자의 상속재산
+      publicInterestDonation: number; // 공익법인 등에 출연한 재산
+      otherNonTaxable: number;      // 기타 비과세/불산입 재산
+    };
+    
+    // 사전증여재산 (10년 이내)
+    giftsAdded: {
+      realEstate: GiftProperty[];   // 부동산 사전증여
+      other: GiftProperty[];        // 기타 사전증여
     };
   };
   
@@ -91,21 +121,40 @@ export interface InheritanceData {
       other: number;         // 기타 세금
     };
     
-    // 기타 채무
+    // 기타 채무 (확장)
     other: {
       guarantee: number;      // 보증채무
       trade_payable: number;  // 매입채무
       lease: number;         // 임대보증금
+      publicUtilities: number; // 공과금
       other: number;         // 기타 채무
     };
   };
   
-  // 공제 정보
+  // 공제 정보 (확장)
   deductions: {
-    spouse: boolean;       // 배우자 공제
-    disabled: boolean;     // 장애인 공제
-    minor: boolean;        // 미성년 공제
-    basic: boolean;        // 일괄 공제
+    spouse: boolean;           // 배우자 공제
+    disabled: boolean;         // 장애인 공제
+    minor: boolean;            // 미성년 공제
+    basic: boolean;            // 일괄 공제
+    elderly: boolean;          // 연로자 공제
+    financialAsset: boolean;   // 금융재산 상속공제
+    businessSuccession: boolean; // 가업상속공제
+    farmingSuccession: boolean;  // 영농상속공제
+    cohabitingHouse: boolean;    // 동거주택 상속공제
+    disasterLoss: boolean;       // 재해손실공제
+    disasterLossAmount?: number; // 재해손실액
+  };
+  
+  // 세액공제 (신규 추가)
+  taxCredits: {
+    generationSkipSurcharge: boolean;        // 세대생략 할증과세
+    generationSkipSurchargeAmount?: number;  // 세대생략 할증세액
+    giftTaxCredit: boolean;                  // 증여세액공제
+    foreignTaxCredit: boolean;               // 외국납부세액공제
+    foreignTaxCreditAmount?: number;         // 외국납부세액
+    shortTermReinheritanceCredit: boolean;   // 단기재상속세액공제
+    shortTermReinheritanceCreditAmount?: number; // 단기재상속세액
   };
 }
 

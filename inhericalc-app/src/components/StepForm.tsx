@@ -14,11 +14,13 @@ interface StepFormProps {
 }
 
 const STEPS = [
-  { id: 1, title: '부동산', description: '집, 땅, 상가 등' },
-  { id: 2, title: '금융자산', description: '예금, 주식, 펀드 등' },
-  { id: 3, title: '기타자산', description: '차량, 보험, 사업 등' },
-  { id: 4, title: '채무', description: '대출, 빚 등' },
-  { id: 5, title: '공제항목', description: '적용 가능한 공제 선택' }
+  { id: 1, title: '기본 정보 및 총상속재산가액', description: '피상속인 정보, 상속인 정보, 모든 상속재산' },
+  { id: 2, title: '비과세 및 과세가액 불산입 재산', description: '총상속재산가액에서 차감되는 재산' },
+  { id: 3, title: '채무 및 공과금, 장례비용', description: '상속세 과세가액에서 공제되는 항목' },
+  { id: 4, title: '사전증여재산', description: '상속세 과세가액에 가산되는 재산' },
+  { id: 5, title: '상속공제', description: '다양한 상속공제 항목 선택' },
+  { id: 6, title: '세액공제', description: '산출세액에서 공제되는 항목 선택' },
+  { id: 7, title: '최종 결과', description: '계산된 상속세액 및 상세 내역' }
 ];
 
 export default function StepForm({ onSubmit, loading = false, onFormDataChange, user, onShowAuthModal }: StepFormProps) {
@@ -28,6 +30,11 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
     deathDate: new Date().toISOString().split('T')[0],
     deceasedName: '피상속인',
     heirsCount: 1,
+    hasSpouse: false,
+    childrenCount: 0,
+    minorChildrenCount: 0,
+    elderlyCount: 0,
+    disabledCount: 0,
     assets: {
       realEstate: {
         residential: 0,
@@ -41,7 +48,9 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
         bonds: 0,
         funds: 0,
         stocks: 0,
-        crypto: 0
+        crypto: 0,
+        insuranceProceeds: 0,
+        severancePay: 0,
       },
       insurance: {
         life: 0,
@@ -68,9 +77,18 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
         deposits_guarantee: 0,
         loans_receivable: 0,
         other: 0,
-        gifts_real_estate: 0,
-        gifts_other: 0
-      }
+      },
+      nonTaxableAssets: {
+        stateDonation: 0,
+        culturalProperty: 0,
+        religiousProperty: 0,
+        publicInterestDonation: 0,
+        otherNonTaxable: 0,
+      },
+      giftsAdded: {
+        realEstate: [],
+        other: [],
+      },
     },
     debts: {
       funeral: {
@@ -97,6 +115,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
         guarantee: 0,
         trade_payable: 0,
         lease: 0,
+        publicUtilities: 0,
         other: 0
       }
     },
@@ -104,8 +123,24 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
       basic: true,
       spouse: false,
       disabled: false,
-      minor: false
-    }
+      minor: false,
+      elderly: false,
+      financialAsset: false,
+      businessSuccession: false,
+      farmingSuccession: false,
+      cohabitingHouse: false,
+      disasterLoss: false,
+      disasterLossAmount: 0,
+    },
+    taxCredits: {
+      generationSkipSurcharge: false,
+      generationSkipSurchargeAmount: 0,
+      giftTaxCredit: false,
+      foreignTaxCredit: false,
+      foreignTaxCreditAmount: 0,
+      shortTermReinheritanceCredit: false,
+      shortTermReinheritanceCreditAmount: 0,
+    },
   });
 
   const updateFormData = (newData: Partial<InheritanceData>) => {
@@ -126,29 +161,80 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
     });
   };
 
-  const handleFinancialChange = (field: keyof InheritanceData['assets']['financial'], value: number) => {
+  // const handleFinancialChange = (field: keyof InheritanceData['assets']['financial'], value: number) => {
+  //   updateFormData({
+  //     assets: {
+  //       ...formData.assets,
+  //       financial: {
+  //         ...formData.assets.financial,
+  //         [field]: value
+  //       }
+  //     }
+  //   });
+  // };
+
+  // const handleOtherAssetsChange = (type: 'insurance' | 'business' | 'movables' | 'other', field: string, value: number) => {
+  //   updateFormData({
+  //     assets: {
+  //       ...formData.assets,
+  //       [type]: {
+  //         ...formData.assets[type],
+  //         [field]: value
+  //       }
+  //     }
+  //   });
+  // };
+
+  const handleGiftAddedChange = (type: 'realEstate' | 'other', index: number, field: string, value: string | number) => {
+    const updatedGifts = [...formData.assets.giftsAdded[type]];
+    updatedGifts[index] = {
+      ...updatedGifts[index],
+      [field]: value
+    };
+    
     updateFormData({
       assets: {
         ...formData.assets,
-        financial: {
-          ...formData.assets.financial,
-          [field]: value
+        giftsAdded: {
+          ...formData.assets.giftsAdded,
+          [type]: updatedGifts
         }
       }
     });
   };
 
-  const handleOtherAssetsChange = (type: 'insurance' | 'business' | 'movables' | 'other', field: string, value: number) => {
-    updateFormData({
-      assets: {
-        ...formData.assets,
-        [type]: {
-          ...formData.assets[type],
-          [field]: value
-        }
-      }
-    });
-  };
+  // const addGift = (type: 'realEstate' | 'other') => {
+  //   const newGift = {
+  //     value: 0,
+  //     giftTaxPaid: 0,
+  //     giftDate: '',
+  //     isHeir: false
+  //   };
+    
+  //   updateFormData({
+  //     assets: {
+  //       ...formData.assets,
+  //       giftsAdded: {
+  //         ...formData.assets.giftsAdded,
+  //         [type]: [...formData.assets.giftsAdded[type], newGift]
+  //       }
+  //     }
+  //   });
+  // };
+
+  // const removeGift = (type: 'realEstate' | 'other', index: number) => {
+  //   const updatedGifts = formData.assets.giftsAdded[type].filter((_, i) => i !== index);
+    
+  //   updateFormData({
+  //     assets: {
+  //       ...formData.assets,
+  //       giftsAdded: {
+  //         ...formData.assets.giftsAdded,
+  //         [type]: updatedGifts
+  //       }
+  //     }
+  //   });
+  // };
 
   const handleDebtChange = (type: 'funeral' | 'financial' | 'taxes' | 'other', field: string, value: number) => {
     updateFormData({
@@ -162,11 +248,20 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
     });
   };
 
-  const handleDeductionChange = (type: keyof InheritanceData['deductions'], value: boolean) => {
+  const handleDeductionChange = (field: keyof InheritanceData['deductions'], value: boolean | number) => {
     updateFormData({
       deductions: {
         ...formData.deductions,
-        [type]: value
+        [field]: value
+      }
+    });
+  };
+
+  const handleTaxCreditChange = (field: keyof InheritanceData['taxCredits'], value: boolean | number) => {
+    updateFormData({
+      taxCredits: {
+        ...formData.taxCredits,
+        [field]: value
       }
     });
   };
@@ -201,12 +296,108 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case 1: // 부동산
+      case 1: // 기본 정보 및 총상속재산가액
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">부동산</h3>
-              <p className="text-gray-600">주거용, 상업용, 토지 등 부동산 자산을 입력해주세요</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">기본 정보 및 총상속재산가액</h3>
+              <p className="text-gray-600">피상속인 정보, 상속인 정보, 모든 상속재산을 입력해주세요</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  피상속인 이름
+                </label>
+                <input
+                  type="text"
+                  value={formData.deceasedName}
+                  onChange={(e) => updateFormData({ deceasedName: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="피상속인 이름"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  상속인 수
+                </label>
+                <input
+                  type="text"
+                  value={formData.heirsCount}
+                  onChange={(e) => updateFormData({ heirsCount: parseInt(formatNumber(e.target.value)) || 0 })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="상속인 수"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  배우자 여부
+                </label>
+                <input
+                  type="checkbox"
+                  checked={formData.hasSpouse}
+                  onChange={(e) => updateFormData({ hasSpouse: e.target.checked })}
+                  className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  자녀 수
+                </label>
+                <input
+                  type="text"
+                  value={formData.childrenCount}
+                  onChange={(e) => updateFormData({ childrenCount: parseInt(formatNumber(e.target.value)) || 0 })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="자녀 수"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  소년 자녀 수
+                </label>
+                <input
+                  type="text"
+                  value={formData.minorChildrenCount}
+                  onChange={(e) => updateFormData({ minorChildrenCount: parseInt(formatNumber(e.target.value)) || 0 })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="소년 자녀 수"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  노인 자녀 수
+                </label>
+                <input
+                  type="text"
+                  value={formData.elderlyCount}
+                  onChange={(e) => updateFormData({ elderlyCount: parseInt(formatNumber(e.target.value)) || 0 })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="노인 자녀 수"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  장애인 자녀 수
+                </label>
+                <input
+                  type="text"
+                  value={formData.disabledCount}
+                  onChange={(e) => updateFormData({ disabledCount: parseInt(formatNumber(e.target.value)) || 0 })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="장애인 자녀 수"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 2: // 비과세 및 과세가액 불산입 재산
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">비과세 및 과세가액 불산입 재산</h3>
+              <p className="text-gray-600">총상속재산가액에서 차감되는 재산을 입력해주세요</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -263,224 +454,15 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                 />
               </div>
             </div>
-            
-            {/* 10년 이내 증여재산 */}
-            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
-                <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-                10년 이내 증여재산 (선택)
-              </h4>
-              <p className="text-sm text-yellow-700 mb-3">
-                피상속인이 사망일 전 10년 이내에 상속인에게 증여한 재산이 있다면 입력해주세요
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    증여받은 부동산 (원)
-                  </label>
-                  <input
-                    type="text"
-                    value={formatDisplayValue(formData.assets.other.gifts_real_estate || 0)}
-                    onChange={(e) => handleOtherAssetsChange('other', 'gifts_real_estate', parseInt(formatNumber(e.target.value)) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                    placeholder="예: 200,000,000"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    증여받은 기타재산 (원)
-                  </label>
-                  <input
-                    type="text"
-                    value={formatDisplayValue(formData.assets.other.gifts_other || 0)}
-                    onChange={(e) => handleOtherAssetsChange('other', 'gifts_other', parseInt(formatNumber(e.target.value)) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                    placeholder="예: 50,000,000"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         );
 
-      case 2: // 금융자산
+      case 3: // 채무 및 공과금, 장례비용
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">금융자산</h3>
-              <p className="text-gray-600">예금, 주식, 펀드 등 금융자산을 입력해주세요</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  예금 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.financial.deposits)}
-                  onChange={(e) => handleFinancialChange('deposits', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 50,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  적금 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.financial.savings)}
-                  onChange={(e) => handleFinancialChange('savings', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 30,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  주식 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.financial.stocks)}
-                  onChange={(e) => handleFinancialChange('stocks', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 50,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  펀드 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.financial.funds)}
-                  onChange={(e) => handleFinancialChange('funds', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 20,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  채권 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.financial.bonds)}
-                  onChange={(e) => handleFinancialChange('bonds', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 10,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  암호화폐 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.financial.crypto)}
-                  onChange={(e) => handleFinancialChange('crypto', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 10,000,000"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 3: // 기타자산
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">기타 자산</h3>
-              <p className="text-gray-600">차량, 보험, 사업 등 기타 자산을 입력해주세요</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  차량 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.movables.vehicles)}
-                  onChange={(e) => handleOtherAssetsChange('movables', 'vehicles', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 30,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  생명보험금 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.insurance.life)}
-                  onChange={(e) => handleOtherAssetsChange('insurance', 'life', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 30,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  연금보험 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.insurance.annuity)}
-                  onChange={(e) => handleOtherAssetsChange('insurance', 'annuity', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 20,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  사업지분 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.business.shares)}
-                  onChange={(e) => handleOtherAssetsChange('business', 'shares', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 100,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  보석/귀금속 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.movables.jewelry)}
-                  onChange={(e) => handleOtherAssetsChange('movables', 'jewelry', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 10,000,000"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  기타 자산 (원)
-                </label>
-                <input
-                  type="text"
-                  value={formatDisplayValue(formData.assets.other.other)}
-                  onChange={(e) => handleOtherAssetsChange('other', 'other', parseInt(formatNumber(e.target.value)) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="예: 20,000,000"
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 4: // 채무
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">채무</h3>
-              <p className="text-gray-600">대출, 빚 등 채무를 입력해주세요</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">채무 및 공과금, 장례비용</h3>
+              <p className="text-gray-600">상속세 과세가액에서 공제되는 항목을 입력해주세요</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -560,12 +542,49 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
           </div>
         );
 
-      case 5: // 공제항목
+      case 4: // 사전증여재산
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">공제 항목</h3>
-              <p className="text-gray-600">적용 가능한 공제를 선택해주세요</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">사전증여재산</h3>
+              <p className="text-gray-600">상속세 과세가액에 가산되는 재산을 입력해주세요</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  증여받은 부동산 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.assets.giftsAdded.realEstate.reduce((total, gift) => total + gift.value, 0))}
+                  onChange={(e) => handleGiftAddedChange('realEstate', 0, 'value', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 200,000,000"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  증여받은 기타재산 (원)
+                </label>
+                <input
+                  type="text"
+                  value={formatDisplayValue(formData.assets.giftsAdded.other.reduce((total, gift) => total + gift.value, 0))}
+                  onChange={(e) => handleGiftAddedChange('other', 0, 'value', parseInt(formatNumber(e.target.value)) || 0)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="예: 50,000,000"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 5: // 상속공제
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">상속공제</h3>
+              <p className="text-gray-600">다양한 상속공제 항목을 선택해주세요</p>
             </div>
             
             <div className="space-y-4 max-w-md mx-auto">
@@ -633,6 +652,148 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-700">
                 💡 일괄공제는 기초공제+인적공제와 비교하여 큰 금액이 자동 적용됩니다. 금융재산공제(금융재산 4천만원 초과 시 20%, 최대 2억원)도 자동 계산됩니다.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 6: // 세액공제
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">세액공제</h3>
+              <p className="text-gray-600">산출세액에서 공제되는 항목을 선택해주세요</p>
+            </div>
+            
+            <div className="space-y-4 max-w-md mx-auto">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.taxCredits.generationSkipSurcharge}
+                    onChange={(e) => handleTaxCreditChange('generationSkipSurcharge', e.target.checked)}
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">세대전 증세 공제</span>
+                    <p className="text-sm text-gray-600">최대 1억원 (세대전 증세 과세 포함)</p>
+                  </div>
+                </label>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.taxCredits.giftTaxCredit}
+                    onChange={(e) => handleTaxCreditChange('giftTaxCredit', e.target.checked)}
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">선물세 공제</span>
+                    <p className="text-sm text-gray-600">최대 1억원 (선물세 과세 포함)</p>
+                  </div>
+                </label>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.taxCredits.foreignTaxCredit}
+                    onChange={(e) => handleTaxCreditChange('foreignTaxCredit', e.target.checked)}
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">외국세 공제</span>
+                    <p className="text-sm text-gray-600">최대 1억원 (외국세 과세 포함)</p>
+                  </div>
+                </label>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.taxCredits.shortTermReinheritanceCredit}
+                    onChange={(e) => handleTaxCreditChange('shortTermReinheritanceCredit', e.target.checked)}
+                    className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">단기재상속 공제</span>
+                    <p className="text-sm text-gray-600">최대 1억원 (단기재상속 과세 포함)</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-700">
+                💡 세대전 증세 공제는 기초공제+인적공제와 비교하여 큰 금액이 자동 적용됩니다. 선물세 공제는 선물세 과세 포함 금액이 자동 적용됩니다. 외국세 공제는 외국세 과세 포함 금액이 자동 적용됩니다. 단기재상속 공제는 단기재상속 과세 포함 금액이 자동 적용됩니다.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 7: // 최종 결과
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">최종 결과</h3>
+              <p className="text-gray-600">계산된 상속세액 및 상세 내역을 확인해주세요</p>
+            </div>
+            
+            <div className="bg-gray-100 p-6 rounded-lg">
+              <h4 className="font-semibold text-gray-800 mb-4">상속세 계산 요약</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>총상속재산가액:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>비과세 및 과세가액 불산입액:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>공과금, 장례비용, 채무:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>사전증여재산 합계:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>상속세 과세가액:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>상속공제액:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>상속세 과세표준:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>상속세 산출세액:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>세액공제액:</span>
+                  <span>{formatDisplayValue(0)} 원</span>
+                </div>
+                <hr className="my-2" />
+                <div className="flex justify-between font-bold text-lg">
+                  <span>최종 납부할 상속세액:</span>
+                  <span className="text-blue-600">{formatDisplayValue(0)} 원</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <p className="text-sm text-yellow-700">
+                ⚠️ 위 금액은 입력하신 정보를 바탕으로 계산된 예상 세액이며, 실제 세액과 차이가 있을 수 있습니다. 
+                자세한 내용은 세무 전문가와 상담하시기 바랍니다.
               </p>
             </div>
 
