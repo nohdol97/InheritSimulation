@@ -105,16 +105,6 @@ export default function LoginRequiredModal({
               </div>
               
               <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-white text-xs font-bold">💾</span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">계산 기록 자동 저장</p>
-                  <p className="text-sm text-gray-600">이전 계산 결과를 언제든지 다시 확인하세요</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
                 <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-white text-xs font-bold">🔔</span>
                 </div>

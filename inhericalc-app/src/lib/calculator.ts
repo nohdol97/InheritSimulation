@@ -11,10 +11,22 @@ const TAX_RATES = [
 
 // 공제 금액 (2025년 기준)
 const DEDUCTION_AMOUNTS = {
-  spouse: 600000000,      // 배우자 공제 - 6억원
-  disabled: 100000000,    // 장애인 공제
-  minor: 100000000,       // 미성년 공제
-  basic: 200000000        // 일괄 공제 - 2억원
+  basic: 200000000,       // 기초공제 - 2억원
+  lumpSum: 500000000,     // 일괄공제 - 5억원 (기초공제 + 인적공제 합계액과 비교하여 큰 금액 적용)
+  spouse: {
+    minimum: 500000000,   // 배우자공제 최소 - 5억원
+    maximum: 3000000000   // 배우자공제 최대 - 30억원
+  },
+  disabled: 100000000,    // 장애인공제 - 1억원
+  minor: 100000000,       // 미성년공제 - 1억원 (실제로는 1천만원 × 19세까지 잔여연수)
+  elderly: 50000000,      // 연로자공제 - 5천만원 (65세 이상)
+  child: 50000000,        // 자녀공제 - 5천만원 (자녀 1인당)
+  financialAsset: {
+    threshold: 40000000,  // 금융재산공제 기준 - 4천만원
+    rate: 0.2,           // 공제율 20%
+    maximum: 200000000   // 최대 2억원
+  },
+  cohabitation: 600000000 // 동거주택공제 - 최대 6억원
 };
 
 /**
@@ -31,7 +43,7 @@ export function calculateInheritanceTax(data: InheritanceData): TaxCalculationRe
   const netAssets = totalAssets - totalDebts;
   
   // 4. 공제액 계산
-  const totalDeductions = calculateDeductions(data.deductions, netAssets);
+  const totalDeductions = calculateDeductions(data.deductions, netAssets, data.assets);
   
   // 5. 과세표준 계산
   const taxableAmount = Math.max(0, netAssets - totalDeductions);
@@ -94,24 +106,50 @@ function calculateTotalDebts(debts: InheritanceData['debts']): number {
 /**
  * 공제액 계산
  */
-function calculateDeductions(deductions: InheritanceData['deductions'], netAssets: number): number {
-  let totalDeductions = 0;
+function calculateDeductions(deductions: InheritanceData['deductions'], netAssets: number, assets: InheritanceData['assets']): number {
+  let basicAndPersonalDeductions = 0;
+  let spouseDeduction = 0;
+  let otherDeductions = 0;
   
-  if (deductions.basic) {
-    totalDeductions += DEDUCTION_AMOUNTS.basic;
-  }
+  // 1. 기초공제 (무조건 적용)
+  basicAndPersonalDeductions += DEDUCTION_AMOUNTS.basic;
   
-  if (deductions.spouse) {
-    totalDeductions += DEDUCTION_AMOUNTS.spouse;
-  }
-  
+  // 2. 인적공제 계산
   if (deductions.disabled) {
-    totalDeductions += DEDUCTION_AMOUNTS.disabled;
+    basicAndPersonalDeductions += DEDUCTION_AMOUNTS.disabled;
   }
   
   if (deductions.minor) {
-    totalDeductions += DEDUCTION_AMOUNTS.minor;
+    // 실제로는 미성년자 수 × 1천만원 × (19세 - 현재나이)로 계산해야 하지만
+    // 간단히 1억원으로 계산 (UI에서 미성년자 수와 나이를 입력받지 않으므로)
+    basicAndPersonalDeductions += DEDUCTION_AMOUNTS.minor;
   }
+  
+  // 3. 일괄공제와 (기초공제 + 인적공제) 중 큰 금액 선택
+  const lumpSumVsPersonal = Math.max(DEDUCTION_AMOUNTS.lumpSum, basicAndPersonalDeductions);
+  
+  // 4. 배우자공제 계산 (별도 적용)
+  if (deductions.spouse) {
+    // 배우자가 실제 상속받은 금액이 5억원 미만이면 5억원 공제
+    // 5억원 이상이면 실제 상속받은 금액 공제 (최대 30억원)
+    // 여기서는 간단히 최소 5억원으로 계산 (실제 상속분할 정보가 없으므로)
+    spouseDeduction = DEDUCTION_AMOUNTS.spouse.minimum;
+  }
+  
+  // 5. 금융재산공제 계산
+  if (deductions.basic) { // 기본 공제 선택 시 금융재산공제도 자동 적용
+    const financialAssets = Object.values(assets.financial).reduce((sum, value) => sum + value, 0);
+    if (financialAssets > DEDUCTION_AMOUNTS.financialAsset.threshold) {
+      const financialDeduction = Math.min(
+        financialAssets * DEDUCTION_AMOUNTS.financialAsset.rate,
+        DEDUCTION_AMOUNTS.financialAsset.maximum
+      );
+      otherDeductions += financialDeduction;
+    }
+  }
+  
+  // 6. 총 공제액 계산
+  const totalDeductions = lumpSumVsPersonal + spouseDeduction + otherDeductions;
   
   // 공제액은 순 재산가액을 초과할 수 없음
   return Math.min(totalDeductions, netAssets);

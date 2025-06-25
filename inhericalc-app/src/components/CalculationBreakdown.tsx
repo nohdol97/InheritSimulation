@@ -226,9 +226,10 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
             <div>• 30억원 초과: 50%</div>
           </div>
           <div className="mt-3 text-sm text-gray-600">
-            <div>✓ 일괄공제: 2억원</div>
-            <div>✓ 배우자공제: 6억원</div>
-            <div>✓ 장애인/미성년공제: 각 1억원</div>
+            <div>✓ 일괄공제: 5억원</div>
+            <div>✓ 배우자공제: 최소 5억원 (최대 30억원)</div>
+            <div>✓ 금융재산공제: 금융재산 4천만원 초과 시 20% (최대 2억원)</div>
+            <div>✓ 장애인/미성년공제: 각각 별도 계산</div>
           </div>
         </div>
 

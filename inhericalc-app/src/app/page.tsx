@@ -499,19 +499,19 @@ export default function Home() {
                   <ul className="text-sm text-gray-600 space-y-2 text-left">
                     <li className="flex items-start">
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                      <span>일괄공제: 2억원</span>
+                      <span>일괄공제: 5억원</span>
                     </li>
                     <li className="flex items-start">
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                      <span>배우자공제: 6억원</span>
+                      <span>배우자공제: 최소 5억원</span>
                     </li>
                     <li className="flex items-start">
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                      <span>장애인공제: 1억원</span>
+                      <span>금융재산공제: 최대 2억원</span>
                     </li>
                     <li className="flex items-start">
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                      <span>미성년공제: 1억원</span>
+                      <span>장애인·미성년공제 등</span>
                     </li>
                   </ul>
                 </div>
@@ -572,7 +572,7 @@ export default function Home() {
         {!showFinalResult && (
           <div className="mt-8 max-w-md mx-auto">
             <VisitorStats />
-          </div>
+        </div>
         )}
       </main>
 

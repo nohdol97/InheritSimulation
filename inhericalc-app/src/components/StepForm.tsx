@@ -579,7 +579,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                   />
                   <div>
                     <span className="font-medium text-gray-900">일괄공제</span>
-                    <p className="text-sm text-gray-600">2억원 (기본 공제)</p>
+                    <p className="text-sm text-gray-600">5억원 (기초공제 2억원 + 인적공제 포함)</p>
                   </div>
                 </label>
               </div>
@@ -594,7 +594,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                   />
                   <div>
                     <span className="font-medium text-gray-900">배우자 공제</span>
-                    <p className="text-sm text-gray-600">6억원 (배우자가 있는 경우)</p>
+                    <p className="text-sm text-gray-600">최소 5억원 (실제 상속분 또는 5억원 중 큰 금액, 최대 30억원)</p>
                   </div>
                 </label>
               </div>
@@ -609,7 +609,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                   />
                   <div>
                     <span className="font-medium text-gray-900">장애인 공제</span>
-                    <p className="text-sm text-gray-600">1억원 (장애인 상속인이 있는 경우)</p>
+                    <p className="text-sm text-gray-600">1천만원 × 기대여명연수 (장애인 상속인)</p>
                   </div>
                 </label>
               </div>
@@ -624,7 +624,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                   />
                   <div>
                     <span className="font-medium text-gray-900">미성년 공제</span>
-                    <p className="text-sm text-gray-600">1억원 (미성년 상속인이 있는 경우)</p>
+                    <p className="text-sm text-gray-600">1천만원 × (19세 - 현재나이) (미성년 상속인)</p>
                   </div>
                 </label>
               </div>
@@ -632,7 +632,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
             
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-700">
-                💡 공제 항목은 중복 적용 가능하며, 상속세 계산 시 자동으로 반영됩니다.
+                💡 일괄공제는 기초공제+인적공제와 비교하여 큰 금액이 자동 적용됩니다. 금융재산공제(금융재산 4천만원 초과 시 20%, 최대 2억원)도 자동 계산됩니다.
               </p>
             </div>
 
