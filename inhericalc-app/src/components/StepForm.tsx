@@ -485,6 +485,134 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
               </div>
             </div>
 
+            {/* 금융자산 카드 */}
+            <div className="bg-green-50 rounded-lg p-4 mb-4">
+              <h4 className="font-medium text-gray-800 mb-3 flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                금융자산 (금융재산공제 대상)
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <TooltipLabel
+                    label="예금 및 적금"
+                    hint="은행 예금, 적금, CMA 등이에요. 금융재산공제 대상입니다."
+                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formatDisplayValue(formData.assets.financial.deposits + formData.assets.financial.savings)}
+                      onChange={(e) => {
+                        const value = parseInt(formatNumber(e.target.value)) || 0;
+                        updateFormData({
+                          assets: {
+                            ...formData.assets,
+                            financial: {
+                              ...formData.assets.financial,
+                              deposits: value,
+                              savings: 0
+                            }
+                          }
+                        });
+                      }}
+                      className="w-full px-3 py-2.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-2.5 text-sm text-gray-500">원</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <TooltipLabel
+                    label="주식 및 펀드"
+                    hint="주식, 펀드, ETF 등 증권투자상품이에요. 금융재산공제 대상입니다."
+                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formatDisplayValue(formData.assets.financial.stocks + formData.assets.financial.funds)}
+                      onChange={(e) => {
+                        const value = parseInt(formatNumber(e.target.value)) || 0;
+                        updateFormData({
+                          assets: {
+                            ...formData.assets,
+                            financial: {
+                              ...formData.assets.financial,
+                              stocks: value,
+                              funds: 0
+                            }
+                          }
+                        });
+                      }}
+                      className="w-full px-3 py-2.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-2.5 text-sm text-gray-500">원</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <TooltipLabel
+                    label="보험금 및 퇴직금"
+                    hint="생명보험금, 퇴직금 등이에요. 금융재산공제 대상입니다."
+                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formatDisplayValue(formData.assets.financial.insuranceProceeds + formData.assets.financial.severancePay)}
+                      onChange={(e) => {
+                        const value = parseInt(formatNumber(e.target.value)) || 0;
+                        updateFormData({
+                          assets: {
+                            ...formData.assets,
+                            financial: {
+                              ...formData.assets.financial,
+                              insuranceProceeds: value,
+                              severancePay: 0
+                            }
+                          }
+                        });
+                      }}
+                      className="w-full px-3 py-2.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-2.5 text-sm text-gray-500">원</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <TooltipLabel
+                    label="채권 및 기타 금융상품"
+                    hint="국채, 회사채, 암호화폐 등 기타 금융상품이에요."
+                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formatDisplayValue(formData.assets.financial.bonds + formData.assets.financial.crypto)}
+                      onChange={(e) => {
+                        const value = parseInt(formatNumber(e.target.value)) || 0;
+                        updateFormData({
+                          assets: {
+                            ...formData.assets,
+                            financial: {
+                              ...formData.assets.financial,
+                              bonds: value,
+                              crypto: 0
+                            }
+                          }
+                        });
+                      }}
+                      className="w-full px-3 py-2.5 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      placeholder="0"
+                    />
+                    <span className="absolute right-3 top-2.5 text-sm text-gray-500">원</span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 p-2 bg-green-100 rounded text-xs text-green-700">
+                💡 금융재산은 상속공제 단계에서 20% 공제를 받을 수 있습니다.
+              </div>
+            </div>
+
             <div className="bg-blue-50 p-3 rounded-lg">
               <p className="text-xs text-blue-700">
                 💡 입력이 복잡하다면 주요 재산만 입력하고 나중에 전문가와 상담받으실 수 있습니다.
@@ -911,6 +1039,35 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
               <p className="text-sm text-blue-700">
                 💡 세액공제는 산출세액에서 차감되는 항목입니다. 해당되는 항목이 있을 때만 선택하세요.
               </p>
+            </div>
+
+            {/* 전문가 상담 안내 */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L4.181 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-amber-800 mb-2">⚠️ 세액공제 정확한 계산을 위한 안내</h4>
+                  <div className="text-sm text-amber-700 space-y-2">
+                    <p><strong>세액공제는 복잡한 계산과 서류 증빙이 필요합니다:</strong></p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li><strong>증여세액공제:</strong> 기납부한 증여세 영수증 확인 필요</li>
+                      <li><strong>외국납부세액공제:</strong> 외국 납세증명서 및 환율 계산</li>
+                      <li><strong>단기재상속공제:</strong> 이전 상속 관련 서류 검토</li>
+                      <li><strong>세대생략 가산세:</strong> 가족관계 및 증여시기 정밀 분석</li>
+                    </ul>
+                    <div className="mt-3 p-3 bg-amber-100 rounded">
+                      <p className="font-medium text-amber-800">
+                        🎯 <strong>전문가 상담 권장:</strong> 세액공제는 절세 효과가 크지만 복잡하므로 
+                        세무사와 상담하여 정확한 금액을 산정받으시기 바랍니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );

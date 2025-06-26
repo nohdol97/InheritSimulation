@@ -137,13 +137,13 @@ function calculateDeductions(
   
   // 3. 인적공제 추가
   if (deductions.disabled && data.disabledCount > 0) {
-    // 장애인공제: 1천만원 × 10년(기대여명) × 장애인 수
-    totalDeductions += 10000000 * 10 * data.disabledCount;
+    // 장애인공제: 1천만원 × 기대여명 × 장애인 수 (평균 35년으로 가정)
+    totalDeductions += 10000000 * 35 * data.disabledCount;
   }
   
   if (deductions.minor && data.minorChildrenCount > 0) {
-    // 미성년자공제: 1천만원 × 10년(평균) × 미성년자 수
-    totalDeductions += 10000000 * 10 * data.minorChildrenCount;
+    // 미성년자공제: 1천만원 × (19세 - 나이) × 미성년자 수 (평균 9년으로 가정)
+    totalDeductions += 10000000 * 9 * data.minorChildrenCount;
   }
   
   if (deductions.elderly && data.elderlyCount > 0) {

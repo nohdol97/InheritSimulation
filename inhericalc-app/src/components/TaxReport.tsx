@@ -27,7 +27,7 @@ export default function TaxReport({ formData, calculationResult }: TaxReportProp
   const otherDebtsTotal = Object.values(formData.debts.other).reduce((sum, value) => sum + value, 0);
 
   // 세액공제 계산
-  const giftTaxCredit = formData.taxCredits.giftTaxCredit ? 100000000 : 0; // 증여세액공제 1억원
+  const giftTaxCredit = formData.taxCredits.giftTaxCredit ? 10000000 : 0; // 증여세액공제 1억원
   const foreignTaxCredit = formData.taxCredits.foreignTaxCredit && formData.taxCredits.foreignTaxCreditAmount 
     ? formData.taxCredits.foreignTaxCreditAmount : 0;
   const shortTermCredit = formData.taxCredits.shortTermReinheritanceCredit && formData.taxCredits.shortTermReinheritanceCreditAmount
