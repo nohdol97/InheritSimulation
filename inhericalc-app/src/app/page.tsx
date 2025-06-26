@@ -25,7 +25,6 @@ import {
 export default function Home() {
   const [formData, setFormData] = useState<InheritanceData>({
     deathDate: '',
-    deceasedName: '',
     heirsCount: 0,
     hasSpouse: false,
     childrenCount: 0,
@@ -253,7 +252,6 @@ export default function Home() {
     setShowFinalResult(false);
     setFormData({
       deathDate: '',
-      deceasedName: '',
       heirsCount: 0,
       hasSpouse: false,
       childrenCount: 0,

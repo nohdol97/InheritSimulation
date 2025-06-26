@@ -6,7 +6,6 @@ export const presetExamples: PresetExample[] = [
     description: "총 재산 4.5억원, 총 채무 1.5억원의 일반적인 중산층 사례",
     data: {
       deathDate: "2024-06-21",
-      deceasedName: "김철수",
       heirsCount: 2,
       hasSpouse: true,
       childrenCount: 1,
@@ -126,7 +125,6 @@ export const presetExamples: PresetExample[] = [
     description: "총 재산 20억원, 총 채무 1억원의 고액 자산가 사례",
     data: {
       deathDate: "2024-06-21",
-      deceasedName: "박영희",
       heirsCount: 3,
       hasSpouse: true,
       childrenCount: 2,
@@ -246,7 +244,6 @@ export const presetExamples: PresetExample[] = [
     description: "총 재산 1.5억원, 총 채무 3천만원의 소액 자산 사례",
     data: {
       deathDate: "2024-06-21",
-      deceasedName: "이민수",
       heirsCount: 1,
       hasSpouse: false,
       childrenCount: 0,
@@ -361,6 +358,4 @@ export const presetExamples: PresetExample[] = [
       }
     }
   }
-];
-
-export const defaultInheritanceData = presetExamples[0].data;
+]; 

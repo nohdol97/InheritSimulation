@@ -11,7 +11,6 @@ export interface GiftProperty {
 export interface InheritanceData {
   // 기본 정보
   deathDate: string;
-  deceasedName: string;
   heirsCount: number;
   
   // 추가된 상속인 정보

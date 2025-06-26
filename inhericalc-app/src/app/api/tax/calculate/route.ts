@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const data: InheritanceData = body;
 
     // 기본 유효성 검사
-    if (!data.deathDate || !data.deceasedName || data.heirsCount <= 0) {
+    if (!data.deathDate || data.heirsCount <= 0) {
       return NextResponse.json(
         { error: '필수 입력 항목이 누락되었습니다.' },
         { status: 400 }

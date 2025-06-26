@@ -34,10 +34,9 @@ export default function LiveCalculation({
 
   useEffect(() => {
     const calculateTax = async () => {
-      // 기본 정보가 입력되지 않았으면 계산하지 않음
-      if (!formData.deathDate || !formData.deceasedName || formData.heirsCount <= 0) {
-        setResult(null);
-        return;
+      // 입력 데이터 유효성 검사
+      if (!formData.deathDate || formData.heirsCount <= 0) {
+        return null;
       }
 
       setIsCalculating(true);
@@ -76,8 +75,8 @@ export default function LiveCalculation({
     };
   }, [showShareMenu]);
 
-  // 계산 기록 저장 함수
-  const handleSaveCalculation = async () => {
+  // 계산 기록 저장 함수 - useCallback으로 최적화
+  const handleSaveCalculation = useCallback(async () => {
     if (!user || !result) return;
     
     try {
@@ -86,7 +85,7 @@ export default function LiveCalculation({
     } catch (error) {
       console.error('계산 기록 저장 실패:', error);
     }
-  };
+  }, [user, result, formData, onSaveCalculation]);
 
   // 상세히 버튼 클릭 핸들러
   const handleShowBreakdown = () => {
@@ -174,16 +173,15 @@ export default function LiveCalculation({
       }
 
       // PDF 다운로드
-      const fileName = `상속세신고서_${formData.deceasedName || '피상속인'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = `상속세신고서_피상속인_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
 
+      setIsGeneratingPDF(false);
     } catch (error) {
       console.error('PDF 생성 오류:', error);
       alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsGeneratingPDF(false);
     }
-  }, [result, user, formData.deceasedName, handleSaveCalculation]);
+  }, [result, user, handleSaveCalculation]);
 
   // 공유 핸들러 수정
   const handleShare = async (type: 'url' | 'kakao') => {
@@ -277,7 +275,7 @@ export default function LiveCalculation({
           <div className="text-4xl mb-4">📊</div>
           <h3 className="text-lg font-medium mb-2">실시간 계산 결과</h3>
           <p className="text-sm">
-            {!formData.deathDate || !formData.deceasedName || formData.heirsCount <= 0
+            {!formData.deathDate || formData.heirsCount <= 0
               ? '기본 정보를 입력하면 실시간으로 계산 결과를 확인할 수 있습니다.'
               : '계산 중...'}
           </p>

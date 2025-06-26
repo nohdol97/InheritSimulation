@@ -54,8 +54,8 @@ export default function ResultSummary({ result, formData, user, onReset, onSaveC
     };
   }, [showShareMenu]);
 
-  // 계산 기록 저장 함수
-  const handleSaveCalculation = async () => {
+  // 계산 기록 저장 함수 - useCallback으로 최적화
+  const handleSaveCalculation = useCallback(async () => {
     if (!user || !result) return;
     
     try {
@@ -64,7 +64,7 @@ export default function ResultSummary({ result, formData, user, onReset, onSaveC
     } catch (error) {
       console.error('계산 기록 저장 실패:', error);
     }
-  };
+  }, [user, result, formData, onSaveCalculation]);
 
   // PDF 다운로드 권한 확인 및 처리
   const handleDownloadPDFRequest = () => {
@@ -143,7 +143,7 @@ export default function ResultSummary({ result, formData, user, onReset, onSaveC
       }
 
       // PDF 다운로드
-      const fileName = `상속세신고서_${formData.deceasedName || '피상속인'}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = `상속세신고서_피상속인_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
 
     } catch (error) {
@@ -152,7 +152,7 @@ export default function ResultSummary({ result, formData, user, onReset, onSaveC
     } finally {
       setIsGeneratingPDF(false);
     }
-  }, [result, user, formData.deceasedName, handleSaveCalculation]);
+  }, [result, user, handleSaveCalculation]);
 
   // 로그인 성공 후 대기 중인 액션 실행
   useEffect(() => {

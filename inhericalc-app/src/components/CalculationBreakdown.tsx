@@ -37,12 +37,26 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
   
   const totalDebts = funeralTotal + financialDebtTotal + taxesTotal + otherDebtsTotal;
   
-  // 공제 계산
-  const basicDeduction = formData.deductions.basic ? 200000000 : 0; // 2025년 기준 2억원
-  const spouseDeduction = formData.deductions.spouse ? 600000000 : 0; // 2025년 기준 6억원
-  const disabledDeduction = formData.deductions.disabled ? 100000000 : 0;
-  const minorDeduction = formData.deductions.minor ? 100000000 : 0;
-  const totalDeductions = basicDeduction + spouseDeduction + disabledDeduction + minorDeduction;
+  // 공제 계산 (2025년 법령 기준)
+  const basicDeduction = 50000000 * formData.heirsCount; // 기초공제: 5천만원 × 상속인 수
+  const lumpSumDeduction = formData.deductions.basic ? Math.max(200000000, basicDeduction) : 0; // 일괄공제: 2억원과 기초공제 중 큰 금액
+  const spouseDeduction = formData.deductions.spouse ? Math.max(500000000, basicDeduction) : 0; // 배우자공제: 최소 5억원 보장
+  const disabledDeduction = formData.deductions.disabled ? 10000000 * 10 * formData.disabledCount : 0; // 장애인공제: 1천만원 × 10년 × 장애인 수
+  const minorDeduction = formData.deductions.minor ? 10000000 * 10 * formData.minorChildrenCount : 0; // 미성년자공제: 1천만원 × 10년 × 미성년자 수
+  const elderlyDeduction = formData.deductions.elderly ? 50000000 * formData.elderlyCount : 0; // 연로자공제: 5천만원 × 연로자 수
+  const financialAssetDeduction = formData.deductions.financialAsset ? financialTotal * 0.2 : 0; // 금융재산공제: 20%
+  const cohabitingHouseDeduction = formData.deductions.cohabitingHouse ? 600000000 : 0; // 동거주택공제: 최대 6억원
+  
+  // 총 공제액: 기초공제/일괄공제/배우자공제 중 하나 + 인적공제들 + 기타공제들
+  let totalDeductions = 0;
+  if (formData.deductions.spouse && formData.hasSpouse) {
+    totalDeductions = spouseDeduction; // 배우자공제 선택
+  } else if (formData.deductions.basic) {
+    totalDeductions = lumpSumDeduction; // 일괄공제 선택
+  } else {
+    totalDeductions = basicDeduction; // 기초공제만
+  }
+  totalDeductions += disabledDeduction + minorDeduction + elderlyDeduction + financialAssetDeduction + cohabitingHouseDeduction;
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
@@ -132,7 +146,7 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
             {formData.deductions.basic && (
               <div className="flex justify-between text-black">
                 <span>일괄공제:</span>
-                <span>{basicDeduction.toLocaleString()}원</span>
+                <span>{lumpSumDeduction.toLocaleString()}원</span>
               </div>
             )}
             {formData.deductions.spouse && (
@@ -151,6 +165,24 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
               <div className="flex justify-between text-black">
                 <span>미성년공제:</span>
                 <span>{minorDeduction.toLocaleString()}원</span>
+              </div>
+            )}
+            {formData.deductions.elderly && (
+              <div className="flex justify-between text-black">
+                <span>연로자공제:</span>
+                <span>{elderlyDeduction.toLocaleString()}원</span>
+              </div>
+            )}
+            {formData.deductions.financialAsset && (
+              <div className="flex justify-between text-black">
+                <span>금융재산공제:</span>
+                <span>{financialAssetDeduction.toLocaleString()}원</span>
+              </div>
+            )}
+            {formData.deductions.cohabitingHouse && (
+              <div className="flex justify-between text-black">
+                <span>동거주택공제:</span>
+                <span>{cohabitingHouseDeduction.toLocaleString()}원</span>
               </div>
             )}
             <div className="border-t pt-2 flex justify-between font-medium text-black">
@@ -217,8 +249,9 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
 
         {/* 세율 정보 */}
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-medium text-black mb-2">📊 2025년 상속세율</h4>
+          <h4 className="font-medium text-black mb-2">📊 2025년 상속세 법령 기준</h4>
           <div className="text-sm text-black space-y-1">
+            <div><strong>상속세율:</strong></div>
             <div>• 1억원 이하: 10%</div>
             <div>• 5억원 이하: 20%</div>
             <div>• 10억원 이하: 30%</div>
@@ -226,10 +259,13 @@ export default function CalculationBreakdown({ formData, calculationResult }: Ca
             <div>• 30억원 초과: 50%</div>
           </div>
           <div className="mt-3 text-sm text-gray-600">
-            <div>✓ 일괄공제: 5억원</div>
-            <div>✓ 배우자공제: 최소 5억원 (최대 30억원)</div>
-            <div>✓ 금융재산공제: 금융재산 4천만원 초과 시 20% (최대 2억원)</div>
-            <div>✓ 장애인/미성년공제: 각각 별도 계산</div>
+            <div><strong>공제 기준:</strong></div>
+            <div>✓ 기초공제: 5천만원 × 상속인 수</div>
+            <div>✓ 일괄공제: 2억원 (기존 5억원에서 변경)</div>
+            <div>✓ 배우자공제: 최소 5억원 보장 (일괄공제와 중복 ❌)</div>
+            <div>✓ 금융재산공제: 금융재산의 20%</div>
+            <div>✓ 동거주택공제: 최대 6억원</div>
+            <div>✓ 장애인/미성년/연로자공제: 각각 별도 계산</div>
           </div>
         </div>
 
