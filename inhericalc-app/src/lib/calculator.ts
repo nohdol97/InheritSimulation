@@ -1,6 +1,6 @@
 import { InheritanceData, TaxCalculationResult } from '@/types';
 
-// 상속세율표 (2025년 기준)
+// 2025년 상속세율표
 const TAX_RATES = [
   { min: 0, max: 100000000, rate: 0.1, deduction: 0 },
   { min: 100000000, max: 500000000, rate: 0.2, deduction: 10000000 },
@@ -10,37 +10,37 @@ const TAX_RATES = [
 ];
 
 /**
- * 상속세 계산 함수 (2025년 법령 기준)
+ * 상속세 계산 (2025년 법령 기준)
  */
 export function calculateInheritanceTax(data: InheritanceData): TaxCalculationResult {
-  // 1. 총상속재산가액 계산
+  // 1. 총 재산가액 계산
   const totalAssets = calculateTotalAssets(data.assets);
   
-  // 2. 비과세재산 계산
+  // 2. 비과세재산 제외
   const nonTaxableAssets = calculateNonTaxableAssets(data.assets.nonTaxableAssets);
   
-  // 3. 총 채무 계산 (장례비용 포함)
-  const totalDebts = calculateTotalDebts(data.debts);
-  
-  // 4. 사전증여재산 계산
+  // 3. 사전증여재산 가산
   const giftedAssets = calculateGiftedAssets(data.assets.giftsAdded);
   
-  // 5. 상속세 과세가액 계산: 총상속재산 - 비과세재산 - 채무 + 사전증여재산
-  const taxableInheritance = Math.max(0, totalAssets - nonTaxableAssets - totalDebts + giftedAssets);
+  // 4. 총 채무 계산
+  const totalDebts = calculateTotalDebts(data.debts);
   
-  // 6. 상속공제 계산 (2025년 법령 기준)
+  // 5. 상속재산 = 총재산 - 비과세재산 + 사전증여재산 - 채무
+  const taxableInheritance = totalAssets - nonTaxableAssets + giftedAssets - totalDebts;
+  
+  // 6. 상속공제 계산
   const totalDeductions = calculateDeductions(data.deductions, taxableInheritance, data.assets, data);
   
-  // 7. 상속세 과세표준 계산: 상속세과세가액 - 각종공제
+  // 7. 과세표준 = 상속재산 - 상속공제
   const taxableAmount = Math.max(0, taxableInheritance - totalDeductions);
   
-  // 8. 상속세 산출세액 계산: 과세표준 × 세율 - 누진공제
+  // 8. 세율 및 산출세액 계산
   const { taxRate, calculatedTax, progressiveDeduction } = calculateTaxRate(taxableAmount);
   
   // 9. 세액공제 계산
   const taxCredits = calculateTaxCredits(data.taxCredits, calculatedTax);
   
-  // 10. 최종 상속세 계산: 산출세액 - 세액공제
+  // 10. 최종 상속세 = 산출세액 - 세액공제
   const finalTax = Math.max(0, calculatedTax - taxCredits);
   
   // 11. 상속인별 세액 계산
@@ -135,15 +135,22 @@ function calculateDeductions(
     totalDeductions += basicDeduction;
   }
   
-  // 3. 인적공제 추가
-  if (deductions.disabled && data.disabledCount > 0) {
-    // 장애인공제: 1천만원 × 기대여명 × 장애인 수 (평균 35년으로 가정)
-    totalDeductions += 10000000 * 35 * data.disabledCount;
+  // 3. 인적공제 추가 (개별 정보 기반 계산)
+  if (deductions.disabled && data.disabledDetails && data.disabledDetails.length > 0) {
+    // 장애인공제: 각 장애인의 기대여명에 따라 개별 계산
+    const disabledDeduction = data.disabledDetails.reduce((sum, disabled) => {
+      return sum + (10000000 * (disabled.lifeExpectancy || 35));
+    }, 0);
+    totalDeductions += disabledDeduction;
   }
   
-  if (deductions.minor && data.minorChildrenCount > 0) {
-    // 미성년자공제: 1천만원 × (19세 - 나이) × 미성년자 수 (평균 9년으로 가정)
-    totalDeductions += 10000000 * 9 * data.minorChildrenCount;
+  if (deductions.minor && data.minorDetails && data.minorDetails.length > 0) {
+    // 미성년자공제: 각 미성년자의 나이에 따라 개별 계산
+    const minorDeduction = data.minorDetails.reduce((sum, minor) => {
+      const yearsUntil19 = Math.max(0, 19 - minor.age);
+      return sum + (10000000 * yearsUntil19);
+    }, 0);
+    totalDeductions += minorDeduction;
   }
   
   if (deductions.elderly && data.elderlyCount > 0) {

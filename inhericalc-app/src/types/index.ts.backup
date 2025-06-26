@@ -8,17 +8,6 @@ export interface GiftProperty {
   isHeir: boolean;
 }
 
-// 미성년자 정보 인터페이스
-export interface MinorInfo {
-  age: number;
-}
-
-// 장애인 정보 인터페이스
-export interface DisabledInfo {
-  age: number;
-  lifeExpectancy?: number; // 기대여명 (선택사항, 기본값 사용 가능)
-}
-
 export interface InheritanceData {
   // 기본 정보
   deathDate: string;
@@ -30,10 +19,6 @@ export interface InheritanceData {
   minorChildrenCount: number;
   elderlyCount: number;
   disabledCount: number;
-  
-  // 미성년자와 장애인 상세 정보
-  minorDetails: MinorInfo[];
-  disabledDetails: DisabledInfo[];
   
   // 재산 정보 - 더 디테일하게 확장
   assets: {

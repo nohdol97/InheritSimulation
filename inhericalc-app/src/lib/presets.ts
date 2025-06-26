@@ -12,7 +12,8 @@ export const presetExamples: PresetExample[] = [
       minorChildrenCount: 0,
       elderlyCount: 0,
       disabledCount: 0,
-      assets: {
+      minorDetails: [],
+      disabledDetails: [],      assets: {
         realEstate: {
           residential: 450000000,
           commercial: 0,
@@ -131,7 +132,8 @@ export const presetExamples: PresetExample[] = [
       minorChildrenCount: 1,
       elderlyCount: 0,
       disabledCount: 0,
-      assets: {
+      minorDetails: [],
+      disabledDetails: [],      assets: {
         realEstate: {
           residential: 2000000000,
           commercial: 0,
@@ -250,7 +252,8 @@ export const presetExamples: PresetExample[] = [
       minorChildrenCount: 0,
       elderlyCount: 0,
       disabledCount: 0,
-      assets: {
+      minorDetails: [],
+      disabledDetails: [],      assets: {
         realEstate: {
           residential: 150000000,
           commercial: 0,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { InheritanceData } from '@/types';
+import { InheritanceData, MinorInfo, DisabledInfo } from '@/types';
 import { User } from '@supabase/supabase-js';
 import ExpertConsultModal from './ExpertConsultModal';
 import TooltipLabel from './TooltipLabel';
@@ -35,6 +35,8 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
     minorChildrenCount: 0,
     elderlyCount: 0,
     disabledCount: 0,
+    minorDetails: [],
+    disabledDetails: [],
     assets: {
       realEstate: {
         residential: 0,
@@ -145,8 +147,76 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
 
   const updateFormData = (newData: Partial<InheritanceData>) => {
     const updatedData = { ...formData, ...newData };
+    
+    // 자동 공제 체크 로직
+    if ('hasSpouse' in newData || 'minorChildrenCount' in newData || 'elderlyCount' in newData || 'disabledCount' in newData) {
+      updatedData.deductions = {
+        ...updatedData.deductions,
+        spouse: updatedData.hasSpouse && updatedData.deductions.spouse,
+        minor: updatedData.minorChildrenCount > 0,
+        elderly: updatedData.elderlyCount > 0,
+        disabled: updatedData.disabledCount > 0,
+      };
+    }
+    
     setFormData(updatedData);
     onFormDataChange?.(updatedData);
+  };
+
+  // 미성년자 수 변경 시 개별 정보 배열 업데이트
+  const updateMinorCount = (count: number) => {
+    const currentDetails = formData.minorDetails;
+    let newDetails = [...currentDetails];
+    
+    if (count > currentDetails.length) {
+      // 새로운 미성년자 추가
+      for (let i = currentDetails.length; i < count; i++) {
+        newDetails.push({ age: 10 }); // 기본 나이 10세
+      }
+    } else if (count < currentDetails.length) {
+      // 미성년자 제거
+      newDetails = newDetails.slice(0, count);
+    }
+    
+    updateFormData({
+      minorChildrenCount: count,
+      minorDetails: newDetails
+    });
+  };
+
+  // 장애인 수 변경 시 개별 정보 배열 업데이트
+  const updateDisabledCount = (count: number) => {
+    const currentDetails = formData.disabledDetails;
+    let newDetails = [...currentDetails];
+    
+    if (count > currentDetails.length) {
+      // 새로운 장애인 추가
+      for (let i = currentDetails.length; i < count; i++) {
+        newDetails.push({ age: 30, lifeExpectancy: 35 }); // 기본값
+      }
+    } else if (count < currentDetails.length) {
+      // 장애인 제거
+      newDetails = newDetails.slice(0, count);
+    }
+    
+    updateFormData({
+      disabledCount: count,
+      disabledDetails: newDetails
+    });
+  };
+
+  // 미성년자 개별 정보 업데이트
+  const updateMinorDetail = (index: number, field: keyof MinorInfo, value: number) => {
+    const newDetails = [...formData.minorDetails];
+    newDetails[index] = { ...newDetails[index], [field]: value };
+    updateFormData({ minorDetails: newDetails });
+  };
+
+  // 장애인 개별 정보 업데이트  
+  const updateDisabledDetail = (index: number, field: keyof DisabledInfo, value: number) => {
+    const newDetails = [...formData.disabledDetails];
+    newDetails[index] = { ...newDetails[index], [field]: value };
+    updateFormData({ disabledDetails: newDetails });
   };
 
   const handleRealEstateChange = (field: keyof InheritanceData['assets']['realEstate'], value: number) => {
@@ -349,7 +419,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                     <input
                       type="text"
                       value={formData.minorChildrenCount}
-                      onChange={(e) => updateFormData({ minorChildrenCount: parseInt(formatNumber(e.target.value)) || 0 })}
+                      onChange={(e) => updateMinorCount(parseInt(formatNumber(e.target.value)) || 0)}
                       className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                       placeholder="명"
                     />
@@ -378,7 +448,7 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                     <input
                       type="text"
                       value={formData.disabledCount}
-                      onChange={(e) => updateFormData({ disabledCount: parseInt(formatNumber(e.target.value)) || 0 })}
+                      onChange={(e) => updateDisabledCount(parseInt(formatNumber(e.target.value)) || 0)}
                       className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                       placeholder="명"
                     />
@@ -388,7 +458,13 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                       <input
                         type="checkbox"
                         checked={formData.hasSpouse}
-                        onChange={(e) => updateFormData({ hasSpouse: e.target.checked })}
+                        onChange={(e) => updateFormData({ 
+                          hasSpouse: e.target.checked,
+                          deductions: {
+                            ...formData.deductions,
+                            spouse: e.target.checked
+                          }
+                        })}
                         className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                       <span className="text-sm font-medium text-gray-700">배우자 있음</span>
@@ -397,6 +473,90 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                 </div>
               </div>
             </div>
+
+            {/* 미성년자 상세 정보 */}
+            {formData.minorChildrenCount > 0 && (
+              <div className="bg-yellow-50 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-gray-800 mb-3 flex items-center">
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                  미성년자 상세 정보
+                </h4>
+                <div className="space-y-3">
+                  {formData.minorDetails.map((minor, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-3 p-3 bg-white rounded border">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {index + 1}번째 미성년자 나이
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="18"
+                          value={minor.age}
+                          onChange={(e) => updateMinorDetail(index, 'age', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                          placeholder="나이"
+                        />
+                      </div>
+                      <div className="flex items-center pt-6">
+                        <span className="text-sm text-gray-600">
+                          공제액: {((19 - minor.age) * 10000000).toLocaleString()}원
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 장애인 상세 정보 */}
+            {formData.disabledCount > 0 && (
+              <div className="bg-orange-50 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-gray-800 mb-3 flex items-center">
+                  <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                  장애인 상세 정보
+                </h4>
+                <div className="space-y-3">
+                  {formData.disabledDetails.map((disabled, index) => (
+                    <div key={index} className="grid grid-cols-3 gap-3 p-3 bg-white rounded border">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {index + 1}번째 장애인 나이
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={disabled.age}
+                          onChange={(e) => updateDisabledDetail(index, 'age', parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                          placeholder="나이"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          기대여명 (년)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="80"
+                          value={disabled.lifeExpectancy || 35}
+                          onChange={(e) => updateDisabledDetail(index, 'lifeExpectancy', parseInt(e.target.value) || 35)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                          placeholder="35"
+                        />
+                      </div>
+                      <div className="flex items-center pt-6">
+                        <span className="text-sm text-gray-600">
+                          공제액: {((disabled.lifeExpectancy || 35) * 10000000).toLocaleString()}원
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
 
@@ -1027,9 +1187,12 @@ export default function StepForm({ onSubmit, loading = false, onFormDataChange, 
                     onChange={(e) => handleTaxCreditChange('shortTermReinheritanceCredit', e.target.checked)}
                     className="mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <div>
-                    <span className="font-medium text-gray-900">단기재상속공제</span>
-                    <p className="text-sm text-gray-600">10년 내 재상속 발생 시 이전 상속세액 공제</p>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-900">단기재상속공제</span>
+                      <span className="text-sm font-bold text-blue-600">10년 내 재상속 발생 시 이전 상속세액 공제</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">10년 내 재상속 발생 시 이전 상속세액 공제</p>
                   </div>
                 </label>
               </div>

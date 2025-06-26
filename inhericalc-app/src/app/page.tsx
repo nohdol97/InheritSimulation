@@ -31,6 +31,8 @@ export default function Home() {
     minorChildrenCount: 0,
     elderlyCount: 0,
     disabledCount: 0,
+    minorDetails: [],
+    disabledDetails: [],
     assets: {
       realEstate: {
         residential: 0,
@@ -258,6 +260,8 @@ export default function Home() {
       minorChildrenCount: 0,
       elderlyCount: 0,
       disabledCount: 0,
+      minorDetails: [],
+      disabledDetails: [],
       assets: {
         realEstate: {
           residential: 0,
